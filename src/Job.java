@@ -23,7 +23,7 @@ public class Job {
 		status = JobStatus.READY;
 		responseTime = 0;
 		waitingTime = 0;
-		 receivedTime = 0;
+		receivedTime = 0;
 	}
 	
 	//erase this later!

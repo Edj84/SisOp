@@ -47,6 +47,18 @@ public class app {
 			
 	public static void main(String[ ] args) {
 		
+		ArrayList<Job> jobs = read();
+		
+		System.out.println(jobs.size());
+		
+		/*for(Job j : jobs)
+			System.out.println(j);
+		*/
+		
+		
+	}
+		/*
+		
 		int numJobs  = 5;
 		int timeSlice = 3;
 		RoundRobin rr = new RoundRobin(timeSlice);
@@ -80,7 +92,7 @@ public class app {
 	  				null ->  selecionar novo processo até que done.size() == numJobs
 	 
 	 	
-	 */
+	 
 		
 	if(cpu.getJob() == null) 
 		rr.selectJob();
@@ -89,20 +101,25 @@ public class app {
 	}
 		
 }		
+	*/
 	
-	/*
-	private static void read() {
+	private static ArrayList<Job> read() {
 		
+		ArrayList<Job> jobs = new ArrayList<Job>();		
 		File file = new File("jobs.txt");
+		
 		try {
 			Scanner scan = new Scanner(file);
 			
 			ArrayList<String> jobsRead = new ArrayList<String>();
 			
-			numJobs = scan.next();
-			scan.next();
+			int numJobs = scan.nextInt();
+			System.out.println(numJobs + " processos");
+			int timeSlice = scan.nextInt();
+			System.out.println("timeSlice " + timeSlice);
+			scan.nextLine();
 			
-			for(int i = 1; i <= Integer.parseInt(numJobs); i++) {
+			for(int i = 0; i < numJobs; i++) {
 				String line = scan.nextLine();				
 				jobsRead.add(line);
 				System.out.println("Leitura: " + line );
@@ -110,20 +127,40 @@ public class app {
 			
 			scan.close();
 			
+			jobs = populate(jobsRead);			
+			
 		}		
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 		
+		return jobs;		
+		
 	}
-	
-	*/
 
-	private static void init() {
+	private static ArrayList<Job> populate(ArrayList<String> jobsRead) {
 		
+		ArrayList<Job> jobs = new ArrayList<Job>();
 		
-	}
-	
-	
-	
+		Scanner scan = new Scanner(jobsRead);
+		Job job;
+		int arrivalTime, runTime, priority;
+		ArrayList<Integer> IO;
+		
+		for(String j : jobsRead) {
+			
+			arrivalTime = scan.nextInt(); 
+			runTime = scan.nextInt();
+			priority = scan.nextInt();
+			IO = new ArrayList<Integer>();
+			
+			while(scan.hasNextInt()) {
+				IO.add(scan.nextInt());
+			}
+			
+			jobs.add(new Job(arrivalTime, runTime, priority, IO));
+		}
+		
+		return jobs;		
+	}	
 }
