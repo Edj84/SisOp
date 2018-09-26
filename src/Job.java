@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 public class Job {
-	private static int jobCount  = 0;
+	private static int jobCount = 0;
 	private int jobID;
 	private int arrivalTime;
 	private int runTime;
@@ -68,6 +68,10 @@ public class Job {
 		return priority;
 	}
 	
+	public int getRunTime() {
+		return runTime;
+	}
+	
 	public int getReceivedTime() {
 		return receivedTime;
 	}
@@ -101,6 +105,8 @@ public class Job {
 					   + "\nresponseTime: " + responseTime
 					   + "\nwaitingTime: " + waitingTime;
 	}
+
+	
 	
 	
 }
