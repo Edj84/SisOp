@@ -8,7 +8,7 @@ public class Job {
 	private int priority;
 	private ArrayList<Integer> IO;
 	private JobStatus status;
-	private int responseTime;
+	private int  responseTime;
 	private int waitingTime;
 	private int receivedTime;
 	
@@ -97,7 +97,9 @@ public class Job {
 	public String toString() {
 		return "Job " + jobID 
 					   + "\nStatus: " + status
-					   + "\nPriority: " + priority;
+					   + "\nPriority: " + priority
+					   + "\nresponseTime: " + responseTime
+					   + "\nwaitingTime: " + waitingTime;
 	}
 	
 	
