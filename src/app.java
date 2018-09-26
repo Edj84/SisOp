@@ -43,19 +43,20 @@ Entregar o código fonte e um arquivo com a descrição do trabalho em no máximo 4 
 
 public class app {
 	
-	
-			
+	private static RoundRobin rr;
+	private static ArrayList<Job> jobs;
+	private static CPU cpu;
+				
 	public static void main(String[ ] args) {
 		
-		ArrayList<Job> jobs = read();
+		//Leitura da time slice e dos jobs a partir do arquivo
 		
-		System.out.println(jobs.size());
+		read();		
+		System.out.println("Li " + jobs.size() + " jobs");		
 		
-		for(Job j : jobs)
-			System.out.println(j);
-		
-		
-		
+		//inicia a simulação
+		simulate();
+	
 	}
 				
 	/* Ordem da operações
@@ -73,7 +74,14 @@ public class app {
 	
 	*/
 	
-	private static ArrayList<Job> read() {
+	private static void simulate() {
+		
+	
+		
+	}
+
+	//Lê o arquivo contendo os dados dos jobs para a memória do programa
+	private static void read() {
 		
 		ArrayList<Job> jobs = new ArrayList<Job>();		
 		File file = new File("jobs.txt");
@@ -84,11 +92,13 @@ public class app {
 			ArrayList<String> jobsRead = new ArrayList<String>();
 			
 			int numJobs = scan.nextInt();
-			System.out.println(numJobs + " processos");
-			int timeSlice = scan.nextInt();
-			System.out.println("timeSlice " + timeSlice);
+			
+			//Instancia Round Robin, informando o valor da fatia de tempo
+			rr = new RoundRobin(scan.nextInt());
+			
 			scan.nextLine();
 			
+			//Lê os dados dos processos
 			for(int i = 0; i < numJobs; i++) {
 				String line = scan.nextLine();				
 				jobsRead.add(line);
@@ -97,18 +107,18 @@ public class app {
 			
 			scan.close();
 			
-			jobs = populate(jobsRead);			
+			//Aciona o método estático que vai instanciar os jobs e popular o ArrayList que os armazena
+			populate(jobsRead);			
 			
 		}		
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
-		}
-		
-		return jobs;		
+		}		
 		
 	}
-
-	private static ArrayList<Job> populate(ArrayList<String> jobsRead) {
+	
+	//Instancia os jobs conforme os dados lidos do arquivo
+	private static void populate(ArrayList<String> jobsRead) {
 		
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		
@@ -131,6 +141,5 @@ public class app {
 			jobs.add(new Job(arrivalTime, runTime, priority, IO));
 		}
 		
-		return jobs;		
 	}	
 }
