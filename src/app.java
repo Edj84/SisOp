@@ -6,9 +6,9 @@ import java.util.Scanner;
 /*
  Definição:
 Ler de um arquivo as seguintes informações, nesta ordem: 
-número de processos, 
-tamanho de fatia de tempo, 
-para cada processo:, 
+número de processos, DONE
+tamanho de fatia de tempo, DONE 
+para cada processo:, DONE
 	tempo de chegada, 
 	tempo de execução, 
 	prioridade (1 até 9 - prioridade 1 é a melhor) e 
@@ -16,9 +16,10 @@ para cada processo:,
 
 Imprimir os tempos médios de resposta e espera para o algoritmo Round Robin com prioridade.
 
-Além disto imprimir um gráfico (texto) mostrando como os processo foram executados. 
+Além disto imprimir um gráfico (texto) mostrando como os processo foram executados.
+ 
 Considerar uma unidade de tempo para troca de contexto (representado abaixo como C). 
-Tempo começa em 1. 
+Tempo começa em 1. - DONE
 Processos iniciam com 1. 
 Processo chega no tempo x e pode começar a executar (respeitando o algoritmo de escalonamento) no tempo x+2 (1 unidade para troca de contexto).
 Tempo que leva para fazer uma operação de entrada e saída: use valor constante igual a 4. 
@@ -34,8 +35,8 @@ Exemplo de arquivo de entrada:
 12 8 5 2
 
 Exemplo de gráfico a ser exibido para o exemplo acima:
-1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
--  -  -  C 1C 2 2 2 C   2    2    2   C  4  44C222C444C222C444C444C444C11C333C111C333C111C333C1C333C333C55C---C5C555C55
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
+- - - C 1 C 2 2 2  C  2  2  2  C  4  4  4  C 2 2 2 C 4 4 4 C 2 2 2 C 4 4 4 C 4 4 4 C 4 4 4 C 1 1 C 3 3 3 C111C333C111C333C1C333C333C55C---C5C555C55
 
 Entregar o código fonte e um arquivo com a descrição do trabalho em no máximo 4 páginas. Utilizar um formato de artigo científico, da ACM, IEEE ou SBC.
  */
@@ -43,19 +44,22 @@ Entregar o código fonte e um arquivo com a descrição do trabalho em no máximo 4 
 
 public class app {
 	
-	
-			
+	private static RoundRobin rr;
+	private static ArrayList<Job> jobs;
+	private static CPU cpu;
+	private static int numJobs;
+	private static int time;
+				
 	public static void main(String[ ] args) {
 		
-		ArrayList<Job> jobs = read();
+		//Leitura da time slice e dos jobs a partir do arquivo
 		
-		System.out.println(jobs.size());
+		read();		
+		System.out.println("Li " + jobs.size() + " jobs");		
 		
-		for(Job j : jobs)
-			System.out.println(j);
-		
-		
-		
+		//inicia a simulação
+		simulate();
+	
 	}
 				
 	/* Ordem da operações
@@ -73,7 +77,79 @@ public class app {
 	
 	*/
 	
-	private static ArrayList<Job> read() {
+	private static void simulate() {
+		
+		time = 1;
+		
+		cpu = new CPU();
+		
+		//Executa enquanto o número de processos na fila de concluídos for menor do que o de processos lidos do arquivo
+		
+		while(!rr.JobsDone(numJobs)) {
+			
+			//Verifica se algum processo está na CPU
+			if(cpu.getJob() == null)
+				//CPU sem processo
+				System.out.println(" - ");
+			
+			else {	
+				//Verifica se algum processo chegou no tempo atual
+				for(int i = 0; i < jobs.size(); i++) {
+			
+					if(jobs.get(i).getRunTime() == time)	
+						//Retira o job a executar da lista de jobs lidos do arquivo e o envia para o escalonador
+						rr.receiveJob(jobs.remove(i));
+				}
+				
+				//Verifica se vai ocorrer preempção	
+				if(preempt()) {
+					System.out.println(" - ");
+					cpu.changeJob(rr.selectNextJob());
+				}
+				
+				//Verifica se o processo atual no processador terminou sua fatia de tempo
+				if(!rr.checkHasTimeLeft()) {
+					cpu.changeJob(rr.selectNextJob());
+				}
+				
+				//Verifica se o processo atual no processador vai fazer IO
+				else if(cpu.getJob().checkIO(time)) {
+						System.out.println("C");
+						rr.receiveJob(cpu.removeJob());
+						cpu.changeJob(rr.selectNextJob());
+				}
+				
+				else {
+					cpu.runJob();
+					rr.decrementTimeLeft();
+				}
+			}
+			
+			numJobs--; //REMOVE LATER For testing only!
+		}
+		
+	}
+				
+
+	private static boolean preempt() {
+		
+		Job currentJob = cpu.getJob();
+		int currentPriority = currentJob.getPriority();
+		boolean preempt = false;
+		
+		//Processo com prioridade 1 não pode ser preempatado
+		if(currentPriority == 1)
+			return false;
+		
+		//Verifica se as filas de prioridades menores do que a do processo atual contém um job pronto para ser executado
+		for(int i = 1; i < currentPriority && !preempt; i++)
+			preempt = rr.checkReadyQueue(i);
+			
+		return !preempt;
+	}
+
+	//Lê o arquivo contendo os dados dos jobs para a memória do programa
+	private static void read() {
 		
 		ArrayList<Job> jobs = new ArrayList<Job>();		
 		File file = new File("jobs.txt");
@@ -83,12 +159,14 @@ public class app {
 			
 			ArrayList<String> jobsRead = new ArrayList<String>();
 			
-			int numJobs = scan.nextInt();
-			System.out.println(numJobs + " processos");
-			int timeSlice = scan.nextInt();
-			System.out.println("timeSlice " + timeSlice);
+			numJobs = scan.nextInt();
+			
+			//Instancia Round Robin, informando o valor da fatia de tempo
+			rr = new RoundRobin(scan.nextInt());
+			
 			scan.nextLine();
 			
+			//Lê os dados dos processos
 			for(int i = 0; i < numJobs; i++) {
 				String line = scan.nextLine();				
 				jobsRead.add(line);
@@ -97,25 +175,24 @@ public class app {
 			
 			scan.close();
 			
-			jobs = populate(jobsRead);			
+			//Aciona o método estático que vai instanciar os jobs e popular o ArrayList que os armazena
+			populate(jobsRead);			
 			
 		}		
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
-		}
-		
-		return jobs;		
+		}		
 		
 	}
-
-	private static ArrayList<Job> populate(ArrayList<String> jobsRead) {
-		
-		ArrayList<Job> jobs = new ArrayList<Job>();
+	
+	//Instancia os jobs conforme os dados lidos do arquivo
+	private static void populate(ArrayList<String> jobsRead) {
 		
 		Scanner scan;
 		Job job;
 		int arrivalTime, runTime, priority;
 		ArrayList<Integer> IO;
+		jobs = new ArrayList<Job>();
 		
 		for(String j : jobsRead) {
 			scan = new Scanner(j);
@@ -131,6 +208,5 @@ public class app {
 			jobs.add(new Job(arrivalTime, runTime, priority, IO));
 		}
 		
-		return jobs;		
 	}	
 }

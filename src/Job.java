@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 public class Job {
-	private static int jobCount  = 0;
+	private static int jobCount = 0;
 	private int jobID;
 	private int arrivalTime;
 	private int runTime;
@@ -24,11 +24,6 @@ public class Job {
 		responseTime = 0;
 		waitingTime = 0;
 		receivedTime = 0;
-	}
-	
-	//erase this later!
-	public void includeIO(int n){
-		IO.add(n);
 	}
 	
 	public int getJobID() {
@@ -68,6 +63,10 @@ public class Job {
 		return priority;
 	}
 	
+	public int getRunTime() {
+		return runTime;
+	}
+	
 	public int getReceivedTime() {
 		return receivedTime;
 	}
@@ -77,15 +76,13 @@ public class Job {
 		checkDone();
 	}
 	
-	public boolean checkIO() {
+	public boolean checkIO(int time) {
 	
 		if(IO.size()>0) {
 			
-			for(int time : IO) 
-			time--;
-	
-			if(IO.get(0) == 0) {
+			if(IO.get(0) == time) {
 				IO.remove(0);
+				status = JobStatus.BLOCKED;
 				return true;
 			}
 		}
@@ -101,6 +98,8 @@ public class Job {
 					   + "\nresponseTime: " + responseTime
 					   + "\nwaitingTime: " + waitingTime;
 	}
+
+	
 	
 	
 }
