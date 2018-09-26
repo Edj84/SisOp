@@ -6,10 +6,12 @@ public class RoundRobin {
 			private HashMap ready;
 			private ArrayList<Job> blocked;
 			private ArrayList<Job> done;
-			private int timeSlice;			
+			private int timeSlice;
+			private int timeLeft;
 						
 			public RoundRobin(int timeSlice) {
 				this.timeSlice = timeSlice;
+				timeLeft = timeSlice;
 				
 				ready = new HashMap<Integer,ArrayList<Job>>();
 				
@@ -59,8 +61,20 @@ public class RoundRobin {
 			}
 			
 			//Escolhe o próximo processo a ser executado
-			public void selectNextJob() {
-												
+			
+			public Job selectNextJob() {
+				
+				Job nextJob;
+				
+				return null;
+			}
+			
+			public void decrementTimeLeft() {
+				timeLeft--;
+			}
+			
+			public boolean checkHasTimeLeft() {
+				return timeLeft > 0;
 			}
 			
 			//Verifica se ainda há processos a executar

@@ -26,11 +26,6 @@ public class Job {
 		receivedTime = 0;
 	}
 	
-	//erase this later!
-	public void includeIO(int n){
-		IO.add(n);
-	}
-	
 	public int getJobID() {
 		return jobID;
 	}
@@ -81,15 +76,13 @@ public class Job {
 		checkDone();
 	}
 	
-	public boolean checkIO() {
+	public boolean checkIO(int time) {
 	
 		if(IO.size()>0) {
 			
-			for(int time : IO) 
-			time--;
-	
-			if(IO.get(0) == 0) {
+			if(IO.get(0) == time) {
 				IO.remove(0);
+				status = JobStatus.BLOCKED;
 				return true;
 			}
 		}

@@ -104,9 +104,25 @@ public class app {
 				//Verifica se vai ocorrer preempção	
 				if(preempt()) {
 					System.out.println(" - ");
-					rr.selectNextJob();
+					cpu.changeJob(rr.selectNextJob());
 				}
 				
+				//Verifica se o processo atual no processador terminou sua fatia de tempo
+				if(!rr.checkHasTimeLeft()) {
+					cpu.changeJob(rr.selectNextJob());
+				}
+				
+				//Verifica se o processo atual no processador vai fazer IO
+				else if(cpu.getJob().checkIO(time)) {
+						System.out.println("C");
+						rr.receiveJob(cpu.removeJob());
+						cpu.changeJob(rr.selectNextJob());
+				}
+				
+				else {
+					cpu.runJob();
+					rr.decrementTimeLeft();
+				}
 			}
 			
 			numJobs--; //REMOVE LATER For testing only!

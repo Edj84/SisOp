@@ -9,20 +9,24 @@ public class CPU {
 		return job;
 	}
 	
-	public void runJob() {
-		
-			
-		
-	}
-	
-	
-	
-	
+	public void receiveJob(Job job) {
+		this.job = job;
+	}		
 
 	public Job changeJob(Job job) {
 		Job aux = this.job;
 		this.job = job;
 		return aux;
-	}	
+	}
+
+	public Job removeJob() {
+		Job aux = this.job;
+		this.job = null;
+		return aux;		
+	}
+	
+	public void runJob() {			
+		job.incrementReceivedTime();
+	}
 	
 }
