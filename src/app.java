@@ -120,12 +120,11 @@ public class app {
 	//Instancia os jobs conforme os dados lidos do arquivo
 	private static void populate(ArrayList<String> jobsRead) {
 		
-		ArrayList<Job> jobs = new ArrayList<Job>();
-		
 		Scanner scan;
 		Job job;
 		int arrivalTime, runTime, priority;
 		ArrayList<Integer> IO;
+		jobs = new ArrayList<Job>();
 		
 		for(String j : jobsRead) {
 			scan = new Scanner(j);
