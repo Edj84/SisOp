@@ -51,33 +51,13 @@ public class app {
 		
 		System.out.println(jobs.size());
 		
-		/*for(Job j : jobs)
+		for(Job j : jobs)
 			System.out.println(j);
-		*/
+		
 		
 		
 	}
-		/*
-		
-		int numJobs  = 5;
-		int timeSlice = 3;
-		RoundRobin rr = new RoundRobin(timeSlice);
-		CPU cpu = new CPU();	
-		
-		Job j1 = new Job(3, 10, 2, new ArrayList<Integer>());
-		Job j2 = new Job(5, 12, 1, new ArrayList<Integer>());
-		Job j3 = new Job(9, 15, 2, new ArrayList<Integer>());
-		Job j4 = new Job(11, 15, 1, new ArrayList<Integer>());
-		Job j5 = new Job(12, 8, 5, new ArrayList<Integer>());
-		
-		j5.includeIO(2);
-		
-		rr.receiveJob(j1);
-		rr.receiveJob(j2);
-		rr.receiveJob(j3);
-		rr.receiveJob(j4);
-		rr.receiveJob(j5);	 
-		
+				
 	/* Ordem da operações
 	 
 	 - verificar se CPU tem processo (método: CPU.getJob() );
@@ -90,17 +70,7 @@ public class app {
 	  						 		 					menor do que timeSlice -> job.receivedTime++ (método: CPU.job.incrementReceivedTime() )
 	  						 		 		BLOCKED -> adicionar processo em rr.blocked				  						
 	  				null ->  selecionar novo processo até que done.size() == numJobs
-	 
-	 	
-	 
-		
-	if(cpu.getJob() == null) 
-		rr.selectJob();
-	else(){
-		cpu.getJob().checkIO();
-	}
-		
-}		
+	
 	*/
 	
 	private static ArrayList<Job> read() {
@@ -142,13 +112,13 @@ public class app {
 		
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		
-		Scanner scan = new Scanner(jobsRead);
+		Scanner scan;
 		Job job;
 		int arrivalTime, runTime, priority;
 		ArrayList<Integer> IO;
 		
 		for(String j : jobsRead) {
-			
+			scan = new Scanner(j);
 			arrivalTime = scan.nextInt(); 
 			runTime = scan.nextInt();
 			priority = scan.nextInt();
