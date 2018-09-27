@@ -13,10 +13,8 @@ public class CPU {
 		this.job = job;
 	}		
 
-	public Job changeJob(Job job) {
-		Job aux = this.job;
+	public void setNewJob(Job job) {
 		this.job = job;
-		return aux;
 	}
 
 	public Job removeJob() {
