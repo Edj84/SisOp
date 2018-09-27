@@ -7,6 +7,7 @@ public class Job {
 	private int runTime;
 	private int priority;
 	private ArrayList<Integer> IO;
+	private int startIOTime;
 	private JobStatus status;
 	private int  responseTime;
 	private int waitingTime;
@@ -20,6 +21,7 @@ public class Job {
 		this.runTime = runTime;
 		this.priority = priority;
 		this.IO = IO;
+		startIOTime = -1;
 		status = JobStatus.READY;
 		responseTime = 0;
 		waitingTime = 0;
@@ -81,13 +83,16 @@ public class Job {
 		if(IO.size()>0) {
 			
 			if(IO.get(0) == time) {
-				IO.remove(0);
-				status = JobStatus.BLOCKED;
+				IO.remove(0);				
 				return true;
 			}
 		}
 		
 	return false;
+	}
+	
+	public int getStartIOTime(){
+		return startIOTime;
 	}
 	
 	@Override
