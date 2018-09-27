@@ -53,7 +53,6 @@ public class app {
 	public static void main(String[ ] args) {
 		
 		//Leitura da time slice e dos jobs a partir do arquivo
-		
 		read();		
 		System.out.println("Li " + jobs.size() + " jobs");		
 		
@@ -61,22 +60,7 @@ public class app {
 		simulate();
 	
 	}
-				
-	/* Ordem da operações
-	 
-	 - verificar se CPU tem processo (método: CPU.getJob() );
-	  				!null -> 
-	  							CPU: verificar job status 
-	  										RUNNING -> verificar se job fará IO (método: CPU.job.checkIO() )
-	  											t -> mudar job status p/ BLOCKED (método: CPU.changeStatus(BLOCKED) )
-	  											f -> verificar job.receivedTime (método: CPU.job.getReceivedTime () )
-	  						 							maior do que timeSlice -> mudar jobStatus (método: CPU.changeStatus(DONE) )
-	  						 		 					menor do que timeSlice -> job.receivedTime++ (método: CPU.job.incrementReceivedTime() )
-	  						 		 		BLOCKED -> adicionar processo em rr.blocked				  						
-	  				null ->  selecionar novo processo até que done.size() == numJobs
-	
-	*/
-	
+		
 	private static void simulate() {
 		
 		time = 1;
@@ -87,57 +71,84 @@ public class app {
 		
 		while(!rr.JobsDone(numJobs)) {
 			
-			//Verifica se algum processo está na CPU
-			if(cpu.getJob() == null)
-				//CPU sem processo
-				System.out.println(" - ");
+			//Verifica se algum processo chegou no tempo atual
+			checkJobsArrived();
 			
-			else {	
-				//Verifica se algum processo chegou no tempo atual
-				for(int i = 0; i < jobs.size(); i++) {
-			
-					if(jobs.get(i).getRunTime() == time)	
-						//Retira o job a executar da lista de jobs lidos do arquivo e o envia para o escalonador
-						rr.receiveJob(jobs.remove(i));
+			//Verifica se algum processo está usando a CPU
+			if(!getCpuStatus()) {							
+				
+				//CPU ocupada. Verifica se o processo que está usando a CPU vai ser preemptado por outro de melhor prioridade
+				if(checkPreemption()) {
+					//Caso haja preempção, muda o processo que está usando a CPU	
+					removeJob(JobStatus.READY);
+					getNewJob();
 				}
 				
-				//Verifica se vai ocorrer preempção	
-				if(preempt()) {
-					System.out.println(" - ");
-					cpu.changeJob(rr.selectNextJob());
+				//Já que não houve preempção, verifica se o processo atual no processador terminou sua fatia de tempo
+				else if(!rr.checkHasTimeLeft()) {
+						//Retira o processo da CPU caso a fatia de tempo tenha se esgotado
+						removeJob(JobStatus.READY);
+						getNewJob();
 				}
 				
-				//Verifica se o processo atual no processador terminou sua fatia de tempo
-				if(!rr.checkHasTimeLeft()) {
-					cpu.changeJob(rr.selectNextJob());
-				}
-				
-				//Verifica se o processo atual no processador vai fazer IO
-				else if(cpu.getJob().checkIO(time)) {
-						System.out.println("C");
-						rr.receiveJob(cpu.removeJob());
-						cpu.changeJob(rr.selectNextJob());
-				}
-				
-				else {
-					cpu.runJob();
-					rr.decrementTimeLeft();
-				}
+					//Processo não foi preemptado e ainda tem tem tempo na CPU. Verifica se ele vai fazer operação de IO
+					else if(cpu.getJob().checkIO(time)) {
+							removeJob(JobStatus.BLOCKED);
+							getNewJob();						
+					}
+						//Processo "sobreviveu" na CPU (não foi preemptado, ainda tem tem tempo e não fez operação de IO).
+						//Vai executar por mais uma unidade de tempo
+						else {
+							runJob();
+							checkJobDone();
+						}
 			}
 			
-			numJobs--; //REMOVE LATER For testing only!
+			//CPU livre. Tenta obter um novo processo pronto para executar
+			else getNewJob();
+			
+			time++;
 		}
 		
 	}
-				
 
-	private static boolean preempt() {
+	private static void checkJobDone() {
+		Job currentJob = cpu.getJob();
+		if(currentJob.getReceivedTime() == currentJob.getRunTime())
+			removeJob(JobStatus.DONE);		
+	}
+	
+	private static void removeJob(JobStatus status) {
+		Job jobRemoved = cpu.removeJob();
+		jobRemoved.setStatus(status);
+		rr.receiveJob(jobRemoved);		
+	}
+
+	private static void checkJobsArrived() {
+			
+		for(int i = 0; i < jobs.size(); i++) {
 		
+			if(jobs.get(i).getRunTime() == time)	
+				//Retira o job a executar da lista de jobs lidos do arquivo e o envia para o escalonador
+				rr.receiveJob(jobs.remove(i));
+		}		
+	}	
+	
+	private static boolean getCpuStatus() {
+		if(cpu.getJob() == null) {
+			//CPU sem processo
+			System.out.println(" - ");
+			return false;
+		}
+		return true;
+	}
+
+	private static boolean checkPreemption() {
 		Job currentJob = cpu.getJob();
 		int currentPriority = currentJob.getPriority();
 		boolean preempt = false;
 		
-		//Processo com prioridade 1 não pode ser preempatado
+		//Processo com prioridade 1 não pode ser preemptado
 		if(currentPriority == 1)
 			return false;
 		
@@ -145,10 +156,18 @@ public class app {
 		for(int i = 1; i < currentPriority && !preempt; i++)
 			preempt = rr.checkReadyQueue(i);
 			
-		return !preempt;
+		return preempt;	
 	}
-
-	//Lê o arquivo contendo os dados dos jobs para a memória do programa
+		
+	private static void getNewJob() {
+		cpu.setNewJob(rr.pickNextJob());		
+	}
+	
+	private static void runJob() {
+		cpu.runJob();
+		rr.decrementTimeLeft();		
+	}
+		
 	private static void read() {
 		
 		ArrayList<Job> jobs = new ArrayList<Job>();		
