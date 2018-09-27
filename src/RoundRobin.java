@@ -57,15 +57,14 @@ public class RoundRobin {
 				
 				ArrayList<Job> aux = (ArrayList<Job>) ready.get(priority);
 				
-				return aux.isEmpty();
+				return !aux.isEmpty();
 			}
 			
 			//Escolhe o próximo processo a ser executado
 			
-			public Job selectNextJob() {
+			public Job pickNextJob() {
 				
-				Job nextJob;
-				
+				Job nextJob;				
 				return null;
 			}
 			
