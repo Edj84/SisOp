@@ -44,17 +44,19 @@ Entregar o código fonte e um arquivo com a descrição do trabalho em no máximo 4 
 
 public class app {
 	
+	private static CPU cpu;
 	private static RoundRobin rr;
 	private static ArrayList<Job> jobs;
-	private static CPU cpu;
 	private static int numJobs;
-	private static int time;
+	private static int timeSlice;	
+	private static int time;	
 				
 	public static void main(String[ ] args) {
 		
 		//Leitura da time slice e dos jobs a partir do arquivo
 		read();		
-		System.out.println("Li " + jobs.size() + " jobs");		
+		System.out.println("Li " + jobs.size() + " jobs");
+		
 		
 		//inicia a simulação
 		simulate();
@@ -63,111 +65,17 @@ public class app {
 		
 	private static void simulate() {
 		
+		cpu = new CPU();
+		rr = new RoundRobin(jobs, timeSlice);
 		time = 1;
 		
-		cpu = new CPU();
-		
-		//Executa enquanto o número de processos na fila de concluídos for menor do que o de processos lidos do arquivo
-		
-		while(!rr.JobsDone(numJobs)) {
-			
-			//Verifica se algum processo chegou no tempo atual
-			checkJobsArrived();
-			
-			//Verifica se algum processo está usando a CPU
-			if(!getCpuStatus()) {							
-				
-				//CPU ocupada. Verifica se o processo que está usando a CPU vai ser preemptado por outro de melhor prioridade
-				if(checkPreemption()) {
-					//Caso haja preempção, muda o processo que está usando a CPU	
-					removeJob(JobStatus.READY);
-					getNewJob();
-				}
-				
-				//Já que não houve preempção, verifica se o processo atual no processador terminou sua fatia de tempo
-				else if(!rr.checkHasTimeLeft()) {
-						//Retira o processo da CPU caso a fatia de tempo tenha se esgotado
-						removeJob(JobStatus.READY);
-						getNewJob();
-				}
-				
-					//Processo não foi preemptado e ainda tem tem tempo na CPU. Verifica se ele vai fazer operação de IO
-					else if(cpu.getJob().checkIO(time)) {
-							removeJob(JobStatus.BLOCKED);
-							getNewJob();						
-					}
-						//Processo "sobreviveu" na CPU (não foi preemptado, ainda tem tem tempo e não fez operação de IO).
-						//Vai executar por mais uma unidade de tempo
-						else {
-							runJob();
-							checkJobDone();
-						}
-			}
-			
-			//CPU livre. Tenta obter um novo processo pronto para executar
-			else getNewJob();
-			
+		while(rr.run(cpu, time)) {
 			time++;
+			rr.run(cpu, time);
 		}
 		
 	}
 
-	private static void checkJobDone() {
-		Job currentJob = cpu.getJob();
-		if(currentJob.getReceivedTime() == currentJob.getRunTime())
-			removeJob(JobStatus.DONE);		
-	}
-	
-	private static void removeJob(JobStatus status) {
-		Job jobRemoved = cpu.removeJob();
-		jobRemoved.setStatus(status);
-		rr.receiveJob(jobRemoved);		
-	}
-
-	private static void checkJobsArrived() {
-			
-		for(int i = 0; i < jobs.size(); i++) {
-		
-			if(jobs.get(i).getRunTime() == time)	
-				//Retira o job a executar da lista de jobs lidos do arquivo e o envia para o escalonador
-				rr.receiveJob(jobs.remove(i));
-		}		
-	}	
-	
-	private static boolean getCpuStatus() {
-		if(cpu.getJob() == null) {
-			//CPU sem processo
-			System.out.println(" - ");
-			return false;
-		}
-		return true;
-	}
-
-	private static boolean checkPreemption() {
-		Job currentJob = cpu.getJob();
-		int currentPriority = currentJob.getPriority();
-		boolean preempt = false;
-		
-		//Processo com prioridade 1 não pode ser preemptado
-		if(currentPriority == 1)
-			return false;
-		
-		//Verifica se as filas de prioridades menores do que a do processo atual contém um job pronto para ser executado
-		for(int i = 1; i < currentPriority && !preempt; i++)
-			preempt = rr.checkReadyQueue(i);
-			
-		return preempt;	
-	}
-		
-	private static void getNewJob() {
-		cpu.setNewJob(rr.pickNextJob());		
-	}
-	
-	private static void runJob() {
-		cpu.runJob();
-		rr.decrementTimeLeft();		
-	}
-		
 	private static void read() {
 		
 		ArrayList<Job> jobs = new ArrayList<Job>();		
@@ -178,10 +86,8 @@ public class app {
 			
 			ArrayList<String> jobsRead = new ArrayList<String>();
 			
-			numJobs = scan.nextInt();
-			
-			//Instancia Round Robin, informando o valor da fatia de tempo
-			rr = new RoundRobin(scan.nextInt());
+			numJobs = scan.nextInt();			
+			timeSlice = scan.nextInt();
 			
 			scan.nextLine();
 			
