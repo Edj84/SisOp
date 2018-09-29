@@ -7,7 +7,7 @@ public class Job {
 	private int runTime;
 	private int priority;
 	private ArrayList<Integer> IO;
-	private int startIOTime;
+	private int IOEndTime;
 	private JobStatus status;
 	private int  responseTime;
 	private int waitingTime;
@@ -21,7 +21,7 @@ public class Job {
 		this.runTime = runTime;
 		this.priority = priority;
 		this.IO = IO;
-		startIOTime = -1;
+		IOEndTime = -1;
 		status = JobStatus.READY;
 		responseTime = 0;
 		waitingTime = 0;
@@ -91,8 +91,8 @@ public class Job {
 	return false;
 	}
 	
-	public int getStartIOTime(){
-		return startIOTime;
+	public int getIOEndTime(){
+		return IOEndTime;
 	}
 	
 	@Override
