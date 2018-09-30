@@ -178,7 +178,7 @@ public class RoundRobin {
 			}
 			
 			//Recebe um novo processo e o inclui na fila adequada conforme seu status
-			public void receiveJob(Job job, int time) {
+			public void receiveJob(Job job) {
 				
 				switch(job.getStatus()) {
 				
@@ -189,7 +189,7 @@ public class RoundRobin {
 					
 					case BLOCKED:
 						blocked.add(job);
-						job.setIOEndTime(time + 3);
+						
 						break;
 						
 					case DONE:
