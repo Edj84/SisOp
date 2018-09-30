@@ -7,12 +7,18 @@ public class Job {
 	private int runTime;
 	private int priority;
 	private ArrayList<Integer> IO;
-	private int startIOTime;
+	private int IOEndTime;
 	private JobStatus status;
-	private int  responseTime;
+	private int responseTime;
 	private int waitingTime;
 	private int receivedTime;
+	private boolean answered;
 	
+	
+	public Job() {
+		jobCount++;
+		jobID = jobCount;
+	}
 	
 	public Job(int arrivalTime, int runTime, int priority, ArrayList<Integer> IO) {
 		jobCount++;
@@ -21,19 +27,24 @@ public class Job {
 		this.runTime = runTime;
 		this.priority = priority;
 		this.IO = IO;
-		startIOTime = -1;
-		status = JobStatus.READY;
+		IOEndTime = -1;
+		status = JobStatus.CREATED;
 		responseTime = 0;
 		waitingTime = 0;
 		receivedTime = 0;
+		answered = false;
 	}
 	
-	public int getJobID() {
+	public int getID() {
 		return jobID;
 	}
 	
 	public void setResponseTime(int initTime) {
 		responseTime = initTime - arrivalTime;
+	}
+	
+	public boolean getAnswered() {
+		return answered;
 	}
 	
 	public int getResponseTime() {
@@ -56,9 +67,13 @@ public class Job {
 		return status;		
 	}
 	
-	private void checkDone() {
-		if(receivedTime == runTime)
+	public boolean checkDone() {
+		if(receivedTime == runTime) {
 			status = JobStatus.DONE;
+			return true;
+		}
+		
+		else return false;
 	}
 	
 	public int getPriority() {
@@ -69,21 +84,30 @@ public class Job {
 		return runTime;
 	}
 	
+	public int getArrivalTime() {
+		return arrivalTime;
+	}
+	
+	public void setIOEndTime(int IOEndTime) {
+		this.IOEndTime = IOEndTime;
+	}
+
 	public int getReceivedTime() {
 		return receivedTime;
 	}
 	
 	public void incrementReceivedTime() {
-		receivedTime++;
-		checkDone();
+		receivedTime++;		
 	}
 	
 	public boolean checkIO(int time) {
-	
+		
 		if(IO.size()>0) {
 			
-			if(IO.get(0) == time) {
-				IO.remove(0);				
+			if(IO.get(0) == receivedTime) {
+				int IOEndTime = time +4;
+				IO.remove(0);
+				setIOEndTime(IOEndTime);
 				return true;
 			}
 		}
@@ -91,8 +115,8 @@ public class Job {
 	return false;
 	}
 	
-	public int getStartIOTime(){
-		return startIOTime;
+	public int getIOEndTime(){
+		return IOEndTime;
 	}
 	
 	@Override
@@ -100,6 +124,8 @@ public class Job {
 		return "Job " + jobID 
 					   + "\nStatus: " + status
 					   + "\nPriority: " + priority
+					   + "\narrivalTime: " + arrivalTime
+					   + "\nrunTime: " + runTime
 					   + "\nresponseTime: " + responseTime
 					   + "\nwaitingTime: " + waitingTime;
 	}
