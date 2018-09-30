@@ -56,6 +56,8 @@ public class app {
 		//Leitura da time slice e dos jobs a partir do arquivo
 		read();		
 		System.out.println("Li " + jobs.size() + " jobs");
+		for(Job j : jobs)
+			System.out.println(j);
 		
 		
 		//inicia a simulação
@@ -69,11 +71,18 @@ public class app {
 		rr = new RoundRobin(jobs, timeSlice);
 		time = 1;
 		
-		while(rr.run(cpu, time)) {
+		while(rr.run(cpu, jobs, time)) {
+			print();
 			time++;
-			rr.run(cpu, time);
+			rr.run(cpu, jobs, time);
 		}
 		
+	}
+
+	private static void print() {
+		System.out.println(cpu);
+		System.out.println(rr);
+		System.out.println("Tempo " + time);		
 	}
 
 	private static void read() {

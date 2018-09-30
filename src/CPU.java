@@ -12,11 +12,7 @@ public class CPU {
 	public void receiveJob(Job job) {
 		this.job = job;
 	}		
-
-	public void setNewJob(Job job) {
-		this.job = job;
-	}
-
+	
 	public Job removeJob() {
 		Job aux = this.job;
 		this.job = null;
@@ -27,4 +23,8 @@ public class CPU {
 		job.incrementReceivedTime();
 	}
 	
+	@Override
+	public String toString() {
+		return "CPU status " + getJob();
+	}
 }

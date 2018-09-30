@@ -56,7 +56,7 @@ public class Job {
 		return status;		
 	}
 	
-	private void checkDone() {
+	public void checkDone() {
 		if(receivedTime == runTime)
 			status = JobStatus.DONE;
 	}
@@ -65,10 +65,22 @@ public class Job {
 		return priority;
 	}
 	
+	public void setReceivedTime(int receivedTime) {
+		this.receivedTime = receivedTime;
+	}
+
 	public int getRunTime() {
 		return runTime;
 	}
 	
+	public int getArrivalTime() {
+		return arrivalTime;
+	}
+	
+	public void setIOEndTime(int IOEndTime) {
+		this.IOEndTime = IOEndTime;
+	}
+
 	public int getReceivedTime() {
 		return receivedTime;
 	}
@@ -100,6 +112,8 @@ public class Job {
 		return "Job " + jobID 
 					   + "\nStatus: " + status
 					   + "\nPriority: " + priority
+					   + "\narrivalTime: " + arrivalTime
+					   + "\nrunTime: " + runTime
 					   + "\nresponseTime: " + responseTime
 					   + "\nwaitingTime: " + waitingTime;
 	}
