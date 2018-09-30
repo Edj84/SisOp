@@ -88,13 +88,12 @@ public class app {
 		CPULog.append(cpu.getStatus());
 		System.out.println(timeLine);
 		System.out.println(CPULog);
-		System.out.println(cpu);
+		
 		/*System.out.println(rr);
 		for(int i = 1; i< 10; i++) {
 			ArrayList<Job> aux = rr.getReadyJobs(i);
 			for(Job j : aux)
-				System.out.println(j);
-				
+				System.out.println(j);				
 		}
 		*/
 	}

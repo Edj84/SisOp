@@ -9,9 +9,10 @@ public class Job {
 	private ArrayList<Integer> IO;
 	private int IOEndTime;
 	private JobStatus status;
-	private int  responseTime;
+	private int responseTime;
 	private int waitingTime;
 	private int receivedTime;
+	private boolean answered;
 	
 	
 	public Job() {
@@ -27,10 +28,11 @@ public class Job {
 		this.priority = priority;
 		this.IO = IO;
 		IOEndTime = -1;
-		status = JobStatus.READY;
+		status = JobStatus.CREATED;
 		responseTime = 0;
 		waitingTime = 0;
 		receivedTime = 0;
+		answered = false;
 	}
 	
 	public int getID() {
@@ -39,6 +41,10 @@ public class Job {
 	
 	public void setResponseTime(int initTime) {
 		responseTime = initTime - arrivalTime;
+	}
+	
+	public boolean getAnswered() {
+		return answered;
 	}
 	
 	public int getResponseTime() {
@@ -61,19 +67,19 @@ public class Job {
 		return status;		
 	}
 	
-	public void checkDone() {
-		if(receivedTime == runTime)
+	public boolean checkDone() {
+		if(receivedTime == runTime) {
 			status = JobStatus.DONE;
+			return true;
+		}
+		
+		else return false;
 	}
 	
 	public int getPriority() {
 		return priority;
 	}
 	
-	public void setReceivedTime(int receivedTime) {
-		this.receivedTime = receivedTime;
-	}
-
 	public int getRunTime() {
 		return runTime;
 	}
@@ -91,16 +97,17 @@ public class Job {
 	}
 	
 	public void incrementReceivedTime() {
-		receivedTime++;
-		checkDone();
+		receivedTime++;		
 	}
 	
 	public boolean checkIO(int time) {
-	
+		
 		if(IO.size()>0) {
 			
-			if(IO.get(0) == time) {
-				IO.remove(0);				
+			if(IO.get(0) == receivedTime) {
+				int IOEndTime = time +4;
+				IO.remove(0);
+				setIOEndTime(IOEndTime);
 				return true;
 			}
 		}
