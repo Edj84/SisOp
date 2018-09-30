@@ -1,9 +1,7 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 public class RoundRobin {
-			private ArrayList<Job> jobs;
 			private HashMap<Integer,ArrayList<Job>> ready;
 			private ArrayList<Job> blocked;
 			private ArrayList<Job> done;
@@ -12,13 +10,11 @@ public class RoundRobin {
 			private int numJobs;
 						
 			public RoundRobin(ArrayList<Job> jobs, int timeSlice) {
-				//Agrupa todos os processos lidos do arquivos e que serão escalonados conforme forem chegando para executar
-				this.jobs = jobs;
-				
+							
 				numJobs = jobs.size();
 				
 				this.timeSlice = timeSlice;
-				timeLeft = timeSlice;
+				resetTimeLeft();
 				
 				ready = new HashMap<Integer,ArrayList<Job>>();
 				
@@ -44,7 +40,7 @@ public class RoundRobin {
 					checkJobsArrived(jobs, time);
 										
 					//Verifica se algum processo está usando a CPU
-					if(cpu.getJob() == null)
+					if(cpu.getStatus().equals("-"))
 						//CPU livre. Tenta obter um novo processo pronto para executar
 						pickNextJob(cpu);
 						
@@ -63,28 +59,37 @@ public class RoundRobin {
 						}
 											
 						//Já que não houve preempção, verifica se o processo atual no processador terminou sua fatia de tempo
-						else if(checkHasTimeLeft(cpu)) {
+						else {
+							if(!checkHasTimeLeft(cpu)) {
+						
 								//Retira o processo da CPU caso a fatia de tempo dele tenha se esgotado
 								Job removedJob = removeJob(cpu, JobStatus.READY);
 								removedJob.checkDone();
 								receiveJob(removedJob);
 								pickNextJob(cpu);
-						}
+							}
 						
 							//Processo não foi preemptado e ainda tem tem tempo na CPU. Verifica se ele vai fazer operação de IO
-							else if(cpu.getJob().checkIO(time)) {
-									removeJob(cpu, JobStatus.BLOCKED);
+							else {
+								if(cpu.getJob().checkIO(time)) {
+							
+									Job removedJob = removeJob(cpu, JobStatus.BLOCKED);
+									receiveJob(removedJob);
 									pickNextJob(cpu);						
-							}
+								}
 								//Processo "sobreviveu" na CPU (não foi preemptado, ainda tem tem tempo e não fez operação de IO).
 								//Vai executar por mais uma unidade de tempo
 								else {
 									cpu.runJob();
-									checkJobDone(cpu.getJob());
+									decrementTimeLeft();
+									cpu.getJob().checkDone();
 								}
+							}
+						}
 					}
-					//Ainda há processos que não terminaram
-					return true;
+				
+				//Ainda há processos que não terminaram
+				return true;
 				}
 				
 				return false; ////Todos os processos já terminaram
@@ -98,16 +103,7 @@ public class RoundRobin {
 			}
 			
 			public boolean checkHasTimeLeft(CPU cpu) {
-				return cpu.getJob().getReceivedTime() < timeSlice;
-			}
-
-			private boolean checkJobDone(Job job) {
-				if(job.getReceivedTime() == job.getRunTime()) {
-					job.setStatus(JobStatus.DONE);
-					return true;
-				}
-				
-				return false;
+				return timeLeft > 0;
 			}
 
 			private void checkJobsArrived(ArrayList<Job> jobs, int time) {
@@ -156,6 +152,10 @@ public class RoundRobin {
 				timeLeft--;
 			}
 			
+			public void resetTimeLeft() {
+				timeLeft = timeSlice;
+			}
+			
 			//Verifica se ainda há processos a executar
 			public boolean JobsDone(int numJobs) {
 				
@@ -169,11 +169,14 @@ public class RoundRobin {
 				for(int i = 1; i < 10 && nextJob == null; i++)
 					if(checkReadyQueue(i)){
 						nextJob = ready.get(i).remove(0);
+						nextJob.setStatus(JobStatus.RUNNING);
 						cpu.receiveJob(nextJob);
+						resetTimeLeft();
 					}
 			}
 			
 			public Job pickNextJob(int queue) {
+				resetTimeLeft();
 				return ready.get(queue).remove(0);
 			}
 			
@@ -224,8 +227,8 @@ public class RoundRobin {
 							 
 			}
 
-			
-			
-			
+			public ArrayList<Job> getReadyJobs(int priority){
+				return ready.get(priority);
+			}
 			
 }

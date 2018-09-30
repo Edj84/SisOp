@@ -14,6 +14,11 @@ public class Job {
 	private int receivedTime;
 	
 	
+	public Job() {
+		jobCount++;
+		jobID = jobCount;
+	}
+	
 	public Job(int arrivalTime, int runTime, int priority, ArrayList<Integer> IO) {
 		jobCount++;
 		jobID = jobCount;
@@ -28,7 +33,7 @@ public class Job {
 		receivedTime = 0;
 	}
 	
-	public int getJobID() {
+	public int getID() {
 		return jobID;
 	}
 	

@@ -49,18 +49,17 @@ public class app {
 	private static ArrayList<Job> jobs;
 	private static int numJobs;
 	private static int timeSlice;	
-	private static int time;	
+	private static int time;
+	private static StringBuilder timeLine;
+	private static StringBuilder CPULog;
+	private static boolean running;
 				
 	public static void main(String[ ] args) {
 		
-		//Leitura da time slice e dos jobs a partir do arquivo
+		//Leitura do arquivo
 		read();		
-		System.out.println("Li " + jobs.size() + " jobs");
-		for(Job j : jobs)
-			System.out.println(j);
 		
-		
-		//inicia a simulação
+		//Gerencia a simulação
 		simulate();
 	
 	}
@@ -70,37 +69,52 @@ public class app {
 		cpu = new CPU();
 		rr = new RoundRobin(jobs, timeSlice);
 		time = 1;
+		timeLine = new StringBuilder();
+		CPULog = new StringBuilder();
+		running = true;
 		
-		while(rr.run(cpu, jobs, time)) {
+		while(running) {
+			running = rr.run(cpu, jobs, time);
 			print();
 			time++;
-			rr.run(cpu, jobs, time);
 		}
+		
+		//calculate();
 		
 	}
 
 	private static void print() {
+		timeLine.append(time);
+		CPULog.append(cpu.getStatus());
+		System.out.println(timeLine);
+		System.out.println(CPULog);
 		System.out.println(cpu);
-		System.out.println(rr);
-		System.out.println("Tempo " + time);		
+		/*System.out.println(rr);
+		for(int i = 1; i< 10; i++) {
+			ArrayList<Job> aux = rr.getReadyJobs(i);
+			for(Job j : aux)
+				System.out.println(j);
+				
+		}
+		*/
 	}
 
 	private static void read() {
 		
-		ArrayList<Job> jobs = new ArrayList<Job>();		
 		File file = new File("jobs.txt");
 		
 		try {
 			Scanner scan = new Scanner(file);
-			
-			ArrayList<String> jobsRead = new ArrayList<String>();
 			
 			numJobs = scan.nextInt();			
 			timeSlice = scan.nextInt();
 			
 			scan.nextLine();
 			
+			
 			//Lê os dados dos processos
+			ArrayList<String> jobsRead = new ArrayList<String>();
+			
 			for(int i = 0; i < numJobs; i++) {
 				String line = scan.nextLine();				
 				jobsRead.add(line);
@@ -139,7 +153,8 @@ public class app {
 				IO.add(scan.nextInt());
 			}
 			
-			jobs.add(new Job(arrivalTime, runTime, priority, IO));
+			job = new Job(arrivalTime, runTime, priority, IO);
+			jobs.add(job);
 		}
 		
 	}	
