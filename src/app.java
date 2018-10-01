@@ -36,8 +36,7 @@ Exemplo de arquivo de entrada:
 
 Exemplo de gráfico a ser exibido para o exemplo acima:
 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
-- - - C 1 C 2 2 2  C  2  2  2  C  4  4  4  C 2 2 2 C 4 4 4 C 2 2 2 C 4 4 4 C 4 4 4 C 4 4 4 C 1 1 C 3 3 3 C111C333C111C333C1C333C333C55C---C5C555C55
-
+---C1C222C222C444C222C444C222C444C444C444C11C333C111C333C111C333C1C333C333C55C---C5C555C55
 Entregar o código fonte e um arquivo com a descrição do trabalho em no máximo 4 páginas. Utilizar um formato de artigo científico, da ACM, IEEE ou SBC.
  */
 
@@ -79,6 +78,13 @@ public class app {
 			time++;
 		}
 		
+		String result = "---C1C222C222C444C222C444C222C444C444C444C11C333C111C333C111C333C1C333C333C55C---C5C555C55";
+		if(result.equals(CPULog.toString())) {
+			System.out.println("MAGIC!");
+		}
+		else
+			System.out.println("OH FUCK IT!");
+		
 		//calculate();
 		
 	}
@@ -86,16 +92,18 @@ public class app {
 	private static void print() {
 		timeLine.append(time);
 		CPULog.append(cpu.getStatus());
+		System.out.println("TEMPO " + time);
 		System.out.println(timeLine);
 		System.out.println(CPULog);
+		System.out.println(cpu);
 		
-		/*System.out.println(rr);
+		System.out.println(rr);
 		for(int i = 1; i< 10; i++) {
 			ArrayList<Job> aux = rr.getReadyJobs(i);
 			for(Job j : aux)
 				System.out.println(j);				
 		}
-		*/
+		
 	}
 
 	private static void read() {
