@@ -48,46 +48,13 @@ public class RoundRobin {
 						cpu.receiveJob(pickNextJob(cpu));
 					}
 					
-					//CPU ocupada.
-					else {
-						//Verifica se o processo que está na CPU concluíu sua execução
-						if(cpu.getJob().checkDone()) {
-							Job jobRemoved = cpu.removeJob();
-							receiveJob(jobRemoved);
-						}
-						//Verifica se o processo atual no processador terminou sua fatia de tempo
-						else {
-							
-							if(!checkHasQuantumLeft(cpu)) {
+					//CPU ocupada. Verifica se ela vai ser liberada
+					else 
+						freeCPU(cpu, time);
 					
-								//Retira o processo da CPU caso a fatia de tempo dele tenha se esgotado
-								Job removedJob = cpu.removeJob();
-								removedJob.setStatus(JobStatus.READY);								
-								receiveJob(removedJob);								
-							}
-						
-							else {
-						
-								//Verifica se o processo que está usando a CPU vai ser preemptado por outro de melhor prioridade
-								int newPriority = checkPreemption(cpu.getJob());
-								if(newPriority > 0) {
-									//Caso haja preempção, muda o processo que está usando a CPU	
-									Job removedJob = cpu.removeJob();
-									removedJob.setStatus(JobStatus.READY);
-									receiveJob(removedJob);																	
-								}
-							
-								//Processo não foi preemptado e ainda tem tem tempo na CPU. Verifica se ele vai fazer operação de IO
-								else {
-									if(cpu.getJob().checkIO(time)) {
-										Job removedJob = cpu.removeJob();
-										removedJob.setStatus(JobStatus.BLOCKED);
-										receiveJob(removedJob);							
-									}
-								
-									//Processo "sobreviveu" na CPU (não terminou, ainda tem tem tempo, não foi preemptado e não fez operação de IO).
-									//Vai executar por uma unidade de tempo
-									else {
+					//Processo "sobreviveu" na CPU (não terminou, ainda tem tem tempo, não foi preemptado e não fez operação de IO).
+					//Se não tiver recém entrado (status CHANGING_CONTEXT), vai executar por uma unidade de tempo
+					if(cpu.getJob() != null && )else {
 										cpu.runJob();
 										decrementQuantumLeft();										
 									}
@@ -104,6 +71,47 @@ public class RoundRobin {
 					return true;				
 				
 				else return false; ////Todos os processos já terminaram
+			}
+			
+			private void freeCPU(CPU cpu, int time) {
+				
+				Job job;
+				boolean released;				
+					
+				released = false;
+					
+				if(cpu.getJob() != null) {
+						
+					//Retira o processo da CPU caso a fatia de tempo dele tenha se esgotado
+					if(!checkHasQuantumLeft(cpu)) {
+						released = true;
+						job = cpu.removeJob();
+						job.setStatus(JobStatus.READY);								
+						receiveJob(job);								
+					}
+						
+					//Verifica se o processo terminou de rodar
+					else {
+						if(cpu.getJob().checkDone()) {
+							released = true;
+							job = cpu.removeJob();
+							job.setStatus(JobStatus.DONE);		
+							receiveJob(job);
+						}
+						
+						else {
+							if(cpu.getJob().checkIO(time)) {
+								released = true;
+								job = cpu.removeJob();
+								job.setStatus(JobStatus.BLOCKED);		
+								receiveJob(job);
+							}
+						}						
+					}
+					
+					if(released)
+						resetQuantumLeft();
+				}
 			}
 			
 			private void updateJobsTimeStats() {
@@ -142,20 +150,7 @@ public class RoundRobin {
 				for(Job job : jobs) {
 					if(job.getArrivalTime() == time-1) 
 						receiveJob(job);
-				}
-				
-									
-					/*
-					for(Job j : jobs) {
-						if(j.getRunTime() == time)	
-							receiveJob(j);
-							jobs.remove(j);
-					}
-					
-					Gerou 
-					Exception in thread "main" java.util.ConcurrentModificationException					
-					*/
-					
+				}	
 			}
 
 			private int checkPreemption(Job currentJob) {
