@@ -27,11 +27,13 @@ public class CPU {
 		return aux;		
 	}
 	
-	public void runJob() {			
-		job.setStatus(JobStatus.RUNNING);
-		job.setAnswered();
-		job.updateReceivedTime();
+	public void run() {			
 		setStatus();
+		if(job != null) {
+			job.setStatus(JobStatus.RUNNING);
+			job.setAnswered();
+			job.updateReceivedTime();
+		}		
 	}
 	
 	public void setStatus() {
