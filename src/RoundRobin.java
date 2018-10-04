@@ -5,16 +5,16 @@ public class RoundRobin {
 			private HashMap<Integer,ArrayList<Job>> ready;			
 			private ArrayList<Job> blocked;
 			private ArrayList<Job> done;
-			private int timeSlice;
-			private int timeLeft;
+			private int quantum;
+			private int quantumLeft;
 			private int numJobs;
 						
-			public RoundRobin(ArrayList<Job> jobs, int timeSlice) {
+			public RoundRobin(ArrayList<Job> jobs, int quantum) {
 							
 				numJobs = jobs.size();
 				
-				this.timeSlice = timeSlice;
-				resetTimeLeft();
+				this.quantum = quantum;
+				resetQuantumLeft();
 				
 				ready = new HashMap<Integer,ArrayList<Job>>();
 				
@@ -58,7 +58,7 @@ public class RoundRobin {
 						//Verifica se o processo atual no processador terminou sua fatia de tempo
 						else {
 							
-							if(!checkHasTimeLeft(cpu)) {
+							if(!checkHasQuantumLeft(cpu)) {
 					
 								//Retira o processo da CPU caso a fatia de tempo dele tenha se esgotado
 								Job removedJob = cpu.removeJob();
@@ -89,7 +89,7 @@ public class RoundRobin {
 									//Vai executar por uma unidade de tempo
 									else {
 										cpu.runJob();
-										decrementTimeLeft();										
+										decrementQuantumLeft();										
 									}
 								}
 							}
@@ -132,8 +132,8 @@ public class RoundRobin {
 				}
 			}
 						
-			public boolean checkHasTimeLeft(CPU cpu) {
-				return timeLeft > 0;
+			public boolean checkHasQuantumLeft(CPU cpu) {
+				return quantumLeft > 0;
 			}
 			
 			private void checkJobsArrived(ArrayList<Job> jobs, int time) {
@@ -179,12 +179,12 @@ public class RoundRobin {
 				return !aux.isEmpty();
 			}
 						
-			public void decrementTimeLeft() {
-				timeLeft--;
+			public void decrementQuantumLeft() {
+				quantumLeft--;
 			}
 			
-			public void resetTimeLeft() {
-				timeLeft = timeSlice;
+			public void resetQuantumLeft() {
+				quantumLeft = quantum;
 			}
 			
 			//Verifica se ainda há processos a executar
@@ -201,7 +201,7 @@ public class RoundRobin {
 					if(checkReadyQueue(i)){
 						nextJob = ready.get(i).remove(0);
 						nextJob.setStatus(JobStatus.CHANGING_CONTEXT);
-						resetTimeLeft();
+						resetQuantumLeft();
 					}
 				return nextJob;
 			}
@@ -209,7 +209,7 @@ public class RoundRobin {
 			public Job pickNextJob(int queue) {
 				Job nextJob = ready.get(queue).remove(0);
 				nextJob.setStatus(JobStatus.CHANGING_CONTEXT);
-				resetTimeLeft();
+				resetQuantumLeft();
 				return nextJob; 
 			}
 			
@@ -259,18 +259,18 @@ public class RoundRobin {
 			}
 
 			public String calculate() {
-				float responseSum = 0;
+				float burstSum = 0;
 				float waitingSum = 0;
 				
 				for(Job job : done) {
-					responseSum += job.getResponseTime();
+					burstSum += job.getBurstTime();
 					waitingSum += job.getWaitingTime();			
 				}
 				
-				float responseMean = responseSum/numJobs;
+				float burstMean = burstSum/numJobs;
 				float waitingMean = waitingSum/numJobs;
 				
-				return "Média do tempo de resposta: " + responseMean 
+				return "Média do tempo de resposta: " + burstMean 
 						+ "\nMédia do tempo de espera: " + waitingMean;				
 			}
 			

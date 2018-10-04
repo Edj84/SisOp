@@ -1,12 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 /*
  Definição:
@@ -52,7 +47,7 @@ public class app {
 	private static RoundRobin rr;
 	private static ArrayList<Job> jobs;
 	private static int numJobs;
-	private static int timeSlice;	
+	private static int quantum;	
 	private static int time;
 	private static StringBuilder timeLine;
 	private static StringBuilder CPULog;
@@ -74,7 +69,7 @@ public class app {
 	private static void simulate() {
 		
 		cpu = new CPU();
-		rr = new RoundRobin(jobs, timeSlice);
+		rr = new RoundRobin(jobs, quantum);
 		time = 1;
 		timeLine = new StringBuilder();
 		CPULog = new StringBuilder();
@@ -102,8 +97,8 @@ public class app {
 			Scanner scan = new Scanner(file);
 			
 			numJobs = scan.nextInt();			
-			timeSlice = scan.nextInt();
-			System.out.println("Fatia de tempo: " + timeSlice);
+			quantum = scan.nextInt();
+			System.out.println("Fatia de tempo: " + quantum);
 			scan.nextLine();
 			
 			//Lê os dados dos processos

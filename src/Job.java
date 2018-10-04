@@ -9,7 +9,7 @@ public class Job {
 	private ArrayList<Integer> IO;
 	private int IOEndTime;
 	private JobStatus status;
-	private int responseTime;
+	private int burstTime;
 	private int waitingTime;
 	private int receivedTime;
 	private boolean answered;
@@ -29,7 +29,7 @@ public class Job {
 		this.IO = IO;
 		IOEndTime = -1;
 		status = JobStatus.CREATED;
-		responseTime = 0;
+		burstTime = 0;
 		waitingTime = 0;
 		receivedTime = 0;
 		answered = false;
@@ -47,8 +47,8 @@ public class Job {
 		answered = true;
 	}
 	
-	public int getResponseTime() {
-		return responseTime;
+	public int getBurstTime() {
+		return burstTime;
 	}
 	
 	public int getWaitingTime() {
@@ -122,13 +122,13 @@ public class Job {
 					   + "\nPriority: " + priority
 					   + "\narrivalTime: " + arrivalTime
 					   + "\nrunTime: " + runTime
-					   + "\nresponseTime: " + responseTime
+					   + "\nresponseTime: " + burstTime
 					   + "\nwaitingTime: " + waitingTime;
 	}
 
 	public void updateTimeStats() {
 		if(!answered)
-			responseTime++;
+			burstTime++;
 		waitingTime++;			
 	}
 
