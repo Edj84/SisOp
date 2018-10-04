@@ -64,10 +64,8 @@ public class Job {
 	}
 	
 	public boolean checkDone() {
-		if(receivedTime == runTime) {
-			status = JobStatus.DONE;
-			return true;
-		}
+		if(receivedTime == runTime) 
+			return true;		
 		
 		else return false;
 	}

@@ -60,7 +60,8 @@ public class app {
 	public static void main(String[ ] args) {
 		
 		//Configurar path na hora de apresentar!
-		File file = new File ("C:/Users/Maica/git/SisOp/testFiles/trab-so1-teste2 SR.txt");
+		//File file = new File ("C:/Users/Maica/git/SisOp/testFiles/trab-so1-teste2 SR.txt");
+		File file = new File ("C:/Users/Maica/git/SisOp/testFiles/jobs.txt");
 		
 		//Leitura do arquivo
 		read(file);
@@ -107,13 +108,15 @@ public class app {
 		for(int i = 0; i < numCPUs; i++)
 			cpus.add(new CPU());
 		
-		rr = new RoundRobin(jobs, timeSlice);
+		rr = new RoundRobin(jobs, timeSlice, cpus);
 		time = 1;
 		timeLine = new StringBuilder();		
 		running = true;
 		
 		while(running) {
-			running = rr.run(cpus, jobs, time);
+			running = rr.run(time);
+			for(int i = 0; i < cpus.size(); i++)
+				System.out.println(cpus.get(i));
 			timeLine.append(time);
 			time++;
 		}

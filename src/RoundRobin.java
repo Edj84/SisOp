@@ -6,16 +6,13 @@ public class RoundRobin {
 			private ArrayList<Job> blocked;
 			private ArrayList<Job> done;
 			private int timeSlice;
-			private int timeLeft;
+			ArrayList<CPU> cpus;
+			private HashMap<CPU, Integer> timeLeft;
+			ArrayList<Job> jobs;
 			private int numJobs;
 						
-			public RoundRobin(ArrayList<Job> jobs, int timeSlice) {
+			public RoundRobin(ArrayList<Job> jobs, int timeSlice, ArrayList<CPU> cpus) {
 							
-				numJobs = jobs.size();
-				
-				this.timeSlice = timeSlice;
-				resetTimeLeft();
-				
 				ready = new HashMap<Integer,ArrayList<Job>>();
 				
 				//Inserindo no Hash as filas de prioridade de processos prontos para executar
@@ -29,12 +26,23 @@ public class RoundRobin {
 				
 				//Não há necessidade de ordenar os processos prontos. Utilizei um ArrayList por padronização e pela facilidade de iteração.
 				done = new ArrayList<Job>();
+								
+				this.timeSlice = timeSlice;
+				
+				this.cpus = cpus;
+				
+				timeLeft = new HashMap<CPU, Integer>();
+				for(CPU cpu : cpus) 
+					timeLeft.put(cpu, timeSlice);
+				
+				this.jobs = jobs;
+				numJobs = jobs.size();
 			}
 			
-			public boolean run(ArrayList<CPU> cpus, ArrayList<Job> jobs, int time) {
+			public boolean run(int time) {
 				
 				//Executa apenas se o número de processos na fila de concluídos for menor do que o de processos lidos do arquivo
-				if(done.size()<numJobs) {
+				if(!JobsDone()) {
 					
 					//Verifica se algum processo chegou no tempo atual
 					checkJobsArrived(jobs, time);
@@ -42,73 +50,99 @@ public class RoundRobin {
 					//Verifica se há processos bloqueados que concluíram sua operação de IO
 					checkBlockedQueue(time);
 										
+					freeCPUs(cpus, time);
+					
+					
+					
+					//Para todas as CPUs livres, tenta obter um novo processo pronto para executar
 					for(CPU cpu : cpus) {
-					
-						//Verifica se algum processo está usando a CPU
-						if(cpu.getJob() == null) {
-							//CPU livre. Tenta obter um novo processo pronto para executar
-							cpu.receiveJob(pickNextJob(cpu));
-						}
-					
-						//CPU ocupada.
-						else {
-							//Verifica se o processo que está na CPU concluíu sua execução
-							if(cpu.getJob().checkDone()) {
-								Job jobRemoved = cpu.removeJob();
-								receiveJob(jobRemoved);
-							}
-							//Verifica se o processo atual no processador terminou sua fatia de tempo
-							else {
-								
-								if(!checkHasTimeLeft(cpu)) {
-						
-									//Retira o processo da CPU caso a fatia de tempo dele tenha se esgotado
-									Job removedJob = cpu.removeJob();
-									removedJob.setStatus(JobStatus.READY);								
-									receiveJob(removedJob);								
-								}
-							
-								else {
-							
-									//Verifica se o processo que está usando a CPU vai ser preemptado por outro de melhor prioridade
-									int newPriority = checkPreemption(cpu.getJob());
-									if(newPriority > 0) {
-										//Caso haja preempção, muda o processo que está usando a CPU	
-										Job removedJob = cpu.removeJob();
-										removedJob.setStatus(JobStatus.READY);
-										receiveJob(removedJob);																	
-									}
-								
-									//Processo não foi preemptado e ainda tem tem tempo na CPU. Verifica se ele vai fazer operação de IO
-									else {
-										if(cpu.getJob().checkIO(time)) {
-											Job removedJob = cpu.removeJob();
-											removedJob.setStatus(JobStatus.BLOCKED);
-											receiveJob(removedJob);							
-										}
-									
-										//Processo "sobreviveu" na CPU (não terminou, ainda tem tem tempo, não foi preemptado e não fez operação de IO).
-										//Vai executar por uma unidade de tempo
-										else {
-											cpu.runJob();
-											decrementTimeLeft();										
-										}
-									}
-								}
-							}
-							if(cpu.getJob() == null)
-								cpu.receiveJob(pickNextJob(cpu));	
-						}
-						cpu.setLog();
+						if(cpu.getJob() == null) 
+							cpu.receiveJob(pickNextJob(cpu));							
 					}
+					
+					for(CPU cpu : cpus) {
+						Job job = cpu.getJob();
 						
-				updateJobsTimeStats();
-				}	
-				if(done.size()<numJobs) 
+						//Para todas as CPUs ocupadas 
+						if(job != null) {
+							
+							//...e cujos processos não estejam recém mudando o contexto
+							if(job.getStatus() != JobStatus.CHANGING_CONTEXT) {
+							
+								//Verifica se o processo atual vai ser preemptado por outro de melhor prioridade
+								int newPriority = checkPreemption(cpu.getJob());
+								
+								//Caso haja preempção, muda o processo que está usando a CPU	
+								if(newPriority > 0) {
+									
+									Job removedJob = cpu.removeJob();
+									removedJob.setStatus(JobStatus.READY);
+									cpu.receiveJob(pickNextJob(cpu));
+									receiveJob(removedJob);
+								}
+							}
+						//Agora todas as cpus estão no estado correto e devem rodar
+						cpu.runJob();
+						decrementTimeLeft(cpu);								
+						}
+					}
+				
+					//Atualiza o log de todas as CPUs
+					for(CPU cpu : cpus)
+						cpu.setLog();
+				
+					//Atualiza os dados de tempo de resposta e de tempo de espera dos processo na fila de prontos		
+					updateJobsTimeStats();				
+				}
+				
+				if(!JobsDone()) 
 					//Ainda há processos que não terminaram
 					return true;				
 				
 				else return false; ////Todos os processos já terminaram
+			}
+
+			private void freeCPUs(ArrayList<CPU> cpus, int time) {
+				
+				Job job;
+				boolean released; 
+				
+				for(CPU cpu : cpus) {
+					
+					released = false;
+					
+					if(cpu.getJob() != null) {
+						
+						//Retira o processo da CPU caso a fatia de tempo dele tenha se esgotado
+						if(!checkHasTimeLeft(cpu)) {
+							released = true;
+							job = cpu.removeJob();
+							job.setStatus(JobStatus.READY);								
+							receiveJob(job);								
+						}
+						
+						//Verifica se o processo terminou de rodar
+						else {
+							if(cpu.getJob().checkDone()) {
+								released = true;
+								job = cpu.removeJob();
+								job.setStatus(JobStatus.DONE);		
+								receiveJob(job);
+							}
+						
+							else {
+								if(cpu.getJob().checkIO(time)) {
+									released = true;
+									job = cpu.removeJob();
+									job.setStatus(JobStatus.BLOCKED);		
+									receiveJob(job);
+								}
+							}						
+						}
+					}
+					if(released)
+						resetTimeLeft(cpu);
+				}
 			}
 			
 			private void updateJobsTimeStats() {
@@ -138,7 +172,7 @@ public class RoundRobin {
 			}
 						
 			public boolean checkHasTimeLeft(CPU cpu) {
-				return timeLeft > 0;
+				return timeLeft.get(cpu) > 0;
 			}
 			
 			private void checkJobsArrived(ArrayList<Job> jobs, int time) {
@@ -184,17 +218,16 @@ public class RoundRobin {
 				return !aux.isEmpty();
 			}
 						
-			public void decrementTimeLeft() {
-				timeLeft--;
+			public void decrementTimeLeft(CPU cpu) {
+				timeLeft.compute(cpu, (k,v) -> v = v-1);
 			}
 			
-			public void resetTimeLeft() {
-				timeLeft = timeSlice;
+			public void resetTimeLeft(CPU cpu) {
+				timeLeft.put(cpu, timeSlice);
 			}
 			
 			//Verifica se ainda há processos a executar
-			public boolean JobsDone(int numJobs) {
-				
+			public boolean JobsDone() {				
 				return done.size() == numJobs;
 			}
 						
@@ -206,16 +239,9 @@ public class RoundRobin {
 					if(checkReadyQueue(i)){
 						nextJob = ready.get(i).remove(0);
 						nextJob.setStatus(JobStatus.CHANGING_CONTEXT);
-						resetTimeLeft();
+						resetTimeLeft(cpu);
 					}
 				return nextJob;
-			}
-			
-			public Job pickNextJob(int queue) {
-				Job nextJob = ready.get(queue).remove(0);
-				nextJob.setStatus(JobStatus.CHANGING_CONTEXT);
-				resetTimeLeft();
-				return nextJob; 
 			}
 			
 			//Recebe um novo processo e o inclui na fila adequada conforme seu status
