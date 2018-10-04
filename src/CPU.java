@@ -29,7 +29,8 @@ public class CPU {
 	
 	public void runJob() {			
 		job.setStatus(JobStatus.RUNNING);
-		job.incrementReceivedTime();
+		job.setAnswered();
+		job.updateReceivedTime();
 		setStatus();
 	}
 	
@@ -61,7 +62,7 @@ public class CPU {
 	
 	public String toString() {
 		if(job != null)
-			return "CPU tem Job " + job.getID() + " - Status " + job.getStatus();
+			return "CPU tem Job " + job.getID() + " - Status " + job.getStatus() + " receivedTime " + job.getReceivedTime();
 		else
 			return "CPU não tem job no momento";
 	}	

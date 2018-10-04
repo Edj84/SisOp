@@ -47,22 +47,23 @@ public class RoundRobin {
 						//CPU livre. Tenta obter um novo processo pronto para executar
 						cpu.receiveJob(pickNextJob(cpu));
 					}
+					
 					//CPU ocupada.
 					else {
 						//Verifica se o processo que está na CPU concluíu sua execução
 						if(cpu.getJob().checkDone()) {
-							receiveJob(cpu.removeJob());
+							Job jobRemoved = cpu.removeJob();
+							receiveJob(jobRemoved);
 						}
-						
 						//Verifica se o processo atual no processador terminou sua fatia de tempo
 						else {
+							
 							if(!checkHasTimeLeft(cpu)) {
 					
 								//Retira o processo da CPU caso a fatia de tempo dele tenha se esgotado
 								Job removedJob = cpu.removeJob();
-								removedJob.checkDone();
-								receiveJob(removedJob);
-								cpu.receiveJob(pickNextJob(cpu));
+								removedJob.setStatus(JobStatus.READY);								
+								receiveJob(removedJob);								
 							}
 						
 							else {
@@ -71,18 +72,17 @@ public class RoundRobin {
 								int newPriority = checkPreemption(cpu.getJob());
 								if(newPriority > 0) {
 									//Caso haja preempção, muda o processo que está usando a CPU	
-									Job removedJob = removeJobFromCPU(cpu, JobStatus.READY);
-									receiveJob(removedJob);
-									Job newJob = pickNextJob(newPriority);
-									cpu.receiveJob(newJob);							
+									Job removedJob = cpu.removeJob();
+									removedJob.setStatus(JobStatus.READY);
+									receiveJob(removedJob);																	
 								}
 							
 								//Processo não foi preemptado e ainda tem tem tempo na CPU. Verifica se ele vai fazer operação de IO
 								else {
 									if(cpu.getJob().checkIO(time)) {
-										Job removedJob = removeJobFromCPU(cpu, JobStatus.BLOCKED);
-										receiveJob(removedJob);
-										cpu.receiveJob(pickNextJob(cpu));						
+										Job removedJob = cpu.removeJob();
+										removedJob.setStatus(JobStatus.BLOCKED);
+										receiveJob(removedJob);							
 									}
 								
 									//Processo "sobreviveu" na CPU (não terminou, ainda tem tem tempo, não foi preemptado e não fez operação de IO).
@@ -94,30 +94,48 @@ public class RoundRobin {
 								}
 							}
 						}
-					}
+						if(cpu.getJob() == null)
+							cpu.receiveJob(pickNextJob(cpu));	
+					}				
+				updateJobsTimeStats();
+				}	
+				if(done.size()<numJobs) 
+					//Ainda há processos que não terminaram
+					return true;				
 				
-				//Ainda há processos que não terminaram
-				return true;
-				}
-				
-				return false; ////Todos os processos já terminaram
+				else return false; ////Todos os processos já terminaram
 			}
 			
+			private void updateJobsTimeStats() {
+				
+				ArrayList<Job> queue;
+				
+				for(int i = 1; i < 10; i++) {
+					queue = ready.get(i);
+					
+					for(Job job : queue) 
+						job.updateTimeStats();
+				}				
+			}
+
 			public void checkBlockedQueue(int time) {
 				if(!blocked.isEmpty()) {
+					Job jobBlocked;
 					for(int i = 0; i < blocked.size(); i++) {
-						if(blocked.get(i).getIOEndTime() == time)
-							changeJobQueue(blocked.get(i), JobStatus.BLOCKED, JobStatus.READY);
+						jobBlocked = blocked.get(i);
+						if(jobBlocked.getIOEndTime() == time) {
+							jobBlocked.setStatus(JobStatus.READY);
+							blocked.remove(i);
+							receiveJob(jobBlocked);						
+						}							
 					}
 				}
 			}
-			
-			
+						
 			public boolean checkHasTimeLeft(CPU cpu) {
 				return timeLeft > 0;
 			}
 			
-
 			private void checkJobsArrived(ArrayList<Job> jobs, int time) {
 				
 				//Envia para o escalonador os jobs que chegaram no instante anterior de tempo
@@ -125,6 +143,7 @@ public class RoundRobin {
 					if(job.getArrivalTime() == time-1) 
 						receiveJob(job);
 				}
+				
 									
 					/*
 					for(Job j : jobs) {
@@ -223,50 +242,6 @@ public class RoundRobin {
 				}							
 			}
 			
-			private Job removeJobFromCPU(CPU cpu, JobStatus status) {
-				Job jobRemoved = cpu.removeJob();
-				jobRemoved.setStatus(status);
-				return jobRemoved;		
-			}
-			
-			private void changeJobQueue(Job job, JobStatus oldStatus, JobStatus newStatus) {
-				job.setStatus(newStatus);
-				
-				switch(oldStatus) {
-				
-					case READY:
-						int priority = job.getPriority();
-						ready.get(priority).remove(job);											
-						break;
-				
-					case BLOCKED:
-						blocked.remove(job);
-						break;
-					
-					default:
-						break;
-				}
-				
-				switch(newStatus) {
-				
-					case READY:
-						int priority = job.getPriority();
-						ready.get(priority).add(job);											
-						break;
-						
-					case BLOCKED:
-						blocked.add(job);						
-						break;
-							
-					case DONE:
-						done.add(job);
-						break;
-							
-					default:
-						break;
-				}				
-			}
-			
 			@Override
 			public String toString() {
 				StringBuilder str = new StringBuilder();
@@ -283,6 +258,19 @@ public class RoundRobin {
 							 
 			}
 
+			public String calculate() {
+				int responseMean = 0;
+				int waitingMean = 0;
+				
+				for(Job job : done) {
+					responseMean += job.getResponseTime();
+					waitingMean += job.getWaitingTime();			
+				}
+				
+				return "Média do tempo de resposta: " + String.valueOf(responseMean) 
+						+ "\nMédia do tempo de espera: " + String.valueOf(waitingMean);				
+			}
+			
 			public ArrayList<Job> getReadyJobs(int priority){
 				return ready.get(priority);
 			}

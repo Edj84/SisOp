@@ -39,20 +39,16 @@ public class Job {
 		return jobID;
 	}
 	
-	public void setResponseTime(int initTime) {
-		responseTime = initTime - arrivalTime;
-	}
-	
 	public boolean getAnswered() {
 		return answered;
 	}
 	
-	public int getResponseTime() {
-		return responseTime;
+	public void setAnswered() {
+		answered = true;
 	}
 	
-	public void incrementWaitingTime() {
-		waitingTime++;
+	public int getResponseTime() {
+		return responseTime;
 	}
 	
 	public int getWaitingTime() {
@@ -96,7 +92,7 @@ public class Job {
 		return receivedTime;
 	}
 	
-	public void incrementReceivedTime() {
+	public void updateReceivedTime() {
 		receivedTime++;		
 	}
 	
@@ -128,6 +124,12 @@ public class Job {
 					   + "\nrunTime: " + runTime
 					   + "\nresponseTime: " + responseTime
 					   + "\nwaitingTime: " + waitingTime;
+	}
+
+	public void updateTimeStats() {
+		if(!answered)
+			responseTime++;
+		waitingTime++;			
 	}
 
 	

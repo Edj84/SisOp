@@ -1,7 +1,12 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 /*
  Definição:
@@ -36,8 +41,7 @@ Exemplo de arquivo de entrada:
 
 Exemplo de gráfico a ser exibido para o exemplo acima:
 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
-- - - C 1 C 2 2 2  C  2  2  2  C  4  4  4  C 2 2 2 C 4 4 4 C 2 2 2 C 4 4 4 C 4 4 4 C 4 4 4 C 1 1 C 3 3 3 C111C333C111C333C1C333C333C55C---C5C555C55
-
+---C1C222C222C444C222C444C222C444C444C444C11C333C111C333C111C333C1C333C333C55C---C5C555C55
 Entregar o código fonte e um arquivo com a descrição do trabalho em no máximo 4 páginas. Utilizar um formato de artigo científico, da ACM, IEEE ou SBC.
  */
 
@@ -56,12 +60,15 @@ public class app {
 				
 	public static void main(String[ ] args) {
 		
+		//Configurar path na hora de apresentar!
+		File file = new File ("C:/Users/Maica/git/SisOp/testFiles/trab-so1-teste3 SR.txt");
+		
 		//Leitura do arquivo
-		read();		
+		read(file);
 		
 		//Gerencia a simulação
 		simulate();
-	
+		System.out.println(rr.calculate());			
 	}
 		
 	private static void simulate() {
@@ -79,37 +86,25 @@ public class app {
 			time++;
 		}
 		
-		//calculate();
-		
-	}
-
-	private static void print() {
-		timeLine.append(time);
-		CPULog.append(cpu.getStatus());
 		System.out.println(timeLine);
 		System.out.println(CPULog);
-		
-		/*System.out.println(rr);
-		for(int i = 1; i< 10; i++) {
-			ArrayList<Job> aux = rr.getReadyJobs(i);
-			for(Job j : aux)
-				System.out.println(j);				
-		}
-		*/
+	}
+	
+	private static void print() {
+		timeLine.append(time);
+		CPULog.append(cpu.getStatus());		
+		System.out.println(cpu);
 	}
 
-	private static void read() {
-		
-		File file = new File("jobs.txt");
-		
+	private static void read(File file) {
+				
 		try {
 			Scanner scan = new Scanner(file);
 			
 			numJobs = scan.nextInt();			
 			timeSlice = scan.nextInt();
-			
+			System.out.println("Fatia de tempo: " + timeSlice);
 			scan.nextLine();
-			
 			
 			//Lê os dados dos processos
 			ArrayList<String> jobsRead = new ArrayList<String>();
@@ -117,7 +112,7 @@ public class app {
 			for(int i = 0; i < numJobs; i++) {
 				String line = scan.nextLine();				
 				jobsRead.add(line);
-				System.out.println("Leitura: " + line );
+				System.out.println("Job " + (i+1) + ": " + line );
 			}			
 			
 			scan.close();
@@ -129,20 +124,18 @@ public class app {
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}		
-		
 	}
 	
 	//Instancia os jobs conforme os dados lidos do arquivo
-	private static void populate(ArrayList<String> jobsRead) {
-		
+	private static void populate(ArrayList<String> jobsRead) {		
 		Scanner scan;
 		Job job;
 		int arrivalTime, runTime, priority;
 		ArrayList<Integer> IO;
 		jobs = new ArrayList<Job>();
 		
-		for(String j : jobsRead) {
-			scan = new Scanner(j);
+		for(int i = 0; i < jobsRead.size(); i++) {
+			scan = new Scanner(jobsRead.get(i));
 			arrivalTime = scan.nextInt(); 
 			runTime = scan.nextInt();
 			priority = scan.nextInt();
@@ -154,7 +147,6 @@ public class app {
 			
 			job = new Job(arrivalTime, runTime, priority, IO);
 			jobs.add(job);
-		}
-		
+		}		
 	}	
 }
