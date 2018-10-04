@@ -1,11 +1,17 @@
 
 public class CPU {
+	private static int CPUCount = 0;
+	private int ID;
 	private Job job;
 	private String status;
+	private StringBuilder log;
 	
 	public CPU() {		
+		CPUCount++;
+		ID = CPUCount;
 		setStatus();
-	}
+		log = new StringBuilder();
+	}	
 	
 	public Job getJob() {
 		return job;
@@ -32,6 +38,7 @@ public class CPU {
 		job.setAnswered();
 		job.updateReceivedTime();
 		setStatus();
+		log.append(status);
 	}
 	
 	public void setStatus() {
@@ -60,10 +67,14 @@ public class CPU {
 		this.status = status;
 	}
 	
+	public String getLog() {
+		return log.toString();
+	}
+	
 	public String toString() {
 		if(job != null)
-			return "CPU tem Job " + job.getID() + " - Status " + job.getStatus() + " receivedTime " + job.getReceivedTime();
+			return "CPU " + ID + " tem Job " + job.getID() + " - Status " + job.getStatus() + " receivedTime " + job.getReceivedTime();
 		else
-			return "CPU não tem job no momento";
+			return "CPU " + ID + "não tem job no momento";
 	}	
 }

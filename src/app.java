@@ -48,14 +48,13 @@ Entregar o código fonte e um arquivo com a descrição do trabalho em no máximo 4 
 
 public class app {
 	
-	private static CPU cpu;
+	private static ArrayList<CPU> cpus;
 	private static RoundRobin rr;
 	private static ArrayList<Job> jobs;
 	private static int numJobs;
 	private static int timeSlice;	
 	private static int time;
-	private static StringBuilder timeLine;
-	private static StringBuilder CPULog;
+	private static StringBuilder timeLine;	
 	private static boolean running;
 				
 	public static void main(String[ ] args) {
@@ -67,33 +66,69 @@ public class app {
 		read(file);
 		
 		//Gerencia a simulação
-		simulate();
+		int numCPUs = getNumCPUs(); 
+		simulate(numCPUs);
 		System.out.println(rr.calculate());			
 	}
+	
+	//Pede ao usuário para informar o número de CPUs da simulação
+	private static int getNumCPUs() {
+		int numCPUs = 1;
+		Scanner input = new Scanner(System.in);
+		System.out.println("Selecione a quantidade de de processadores: ");
+		System.out.println("1 - Um processador \n2 - Dois processadores \n4 - Quatro processadores");
 		
-	private static void simulate() {
+		try {
+			numCPUs = input.nextInt();
+			System.out.println("CPUS " + numCPUs);
+			
+			while(numCPUs != 1 && numCPUs != 2 && numCPUs != 4) {
+				System.out.println("Seleção inválida.");
+				System.out.println("Selecione a quantidade de de processadores: ");
+				System.out.println("1 - Um processador \n2 - Dois processadores \n4 - Quatro processadores");
+				numCPUs = input.nextInt();
+			}
+			System.out.println("Simulação com " + numCPUs + " CPUs");			
+		}		
+		catch(Exception e) {
+			System.out.println("Formato inválido");
+			getNumCPUs();			
+		}
 		
-		cpu = new CPU();
+		finally {
+			input.close();
+		}
+		
+		return numCPUs;
+	}
+
+	private static void simulate(int numCPUs) {
+		
+		cpus = new ArrayList<CPU>();
+		for(int i = 0; i < numCPUs; i++)
+			cpus.add(new CPU());
+		
 		rr = new RoundRobin(jobs, timeSlice);
 		time = 1;
-		timeLine = new StringBuilder();
-		CPULog = new StringBuilder();
+		timeLine = new StringBuilder();		
 		running = true;
 		
 		while(running) {
-			running = rr.run(cpu, jobs, time);
-			print();
+			running = rr.run(cpus, jobs, time);
+			timeLine.append(time);
 			time++;
 		}
 		
-		System.out.println(timeLine);
-		System.out.println(CPULog);
+		print();				
 	}
 	
 	private static void print() {
-		timeLine.append(time);
-		CPULog.append(cpu.getStatus());		
-		System.out.println(cpu);
+						
+		for(int i = 0; i < cpus.size(); i++) {
+			System.out.println(cpus.get(i).getLog().length());
+			System.out.println(timeLine.toString());
+			System.out.println(cpus.get(i).getLog());
+		}
 	}
 
 	private static void read(File file) {

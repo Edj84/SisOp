@@ -31,7 +31,7 @@ public class RoundRobin {
 				done = new ArrayList<Job>();
 			}
 			
-			public boolean run(CPU cpu, ArrayList<Job> jobs, int time) {
+			public boolean run(ArrayList<CPU> cpus, ArrayList<Job> jobs, int time) {
 				
 				//Executa apenas se o número de processos na fila de concluídos for menor do que o de processos lidos do arquivo
 				if(done.size()<numJobs) {
@@ -42,61 +42,65 @@ public class RoundRobin {
 					//Verifica se há processos bloqueados que concluíram sua operação de IO
 					checkBlockedQueue(time);
 										
-					//Verifica se algum processo está usando a CPU
-					if(cpu.getJob() == null) {
-						//CPU livre. Tenta obter um novo processo pronto para executar
-						cpu.receiveJob(pickNextJob(cpu));
-					}
+					for(CPU cpu : cpus) {
 					
-					//CPU ocupada.
-					else {
-						//Verifica se o processo que está na CPU concluíu sua execução
-						if(cpu.getJob().checkDone()) {
-							Job jobRemoved = cpu.removeJob();
-							receiveJob(jobRemoved);
+						//Verifica se algum processo está usando a CPU
+						if(cpu.getJob() == null) {
+							//CPU livre. Tenta obter um novo processo pronto para executar
+							cpu.receiveJob(pickNextJob(cpu));
 						}
-						//Verifica se o processo atual no processador terminou sua fatia de tempo
-						else {
-							
-							if(!checkHasTimeLeft(cpu)) {
 					
-								//Retira o processo da CPU caso a fatia de tempo dele tenha se esgotado
-								Job removedJob = cpu.removeJob();
-								removedJob.setStatus(JobStatus.READY);								
-								receiveJob(removedJob);								
+						//CPU ocupada.
+						else {
+							//Verifica se o processo que está na CPU concluíu sua execução
+							if(cpu.getJob().checkDone()) {
+								Job jobRemoved = cpu.removeJob();
+								receiveJob(jobRemoved);
 							}
-						
+							//Verifica se o processo atual no processador terminou sua fatia de tempo
 							else {
+								
+								if(!checkHasTimeLeft(cpu)) {
 						
-								//Verifica se o processo que está usando a CPU vai ser preemptado por outro de melhor prioridade
-								int newPriority = checkPreemption(cpu.getJob());
-								if(newPriority > 0) {
-									//Caso haja preempção, muda o processo que está usando a CPU	
+									//Retira o processo da CPU caso a fatia de tempo dele tenha se esgotado
 									Job removedJob = cpu.removeJob();
-									removedJob.setStatus(JobStatus.READY);
-									receiveJob(removedJob);																	
+									removedJob.setStatus(JobStatus.READY);								
+									receiveJob(removedJob);								
 								}
 							
-								//Processo não foi preemptado e ainda tem tem tempo na CPU. Verifica se ele vai fazer operação de IO
 								else {
-									if(cpu.getJob().checkIO(time)) {
+							
+									//Verifica se o processo que está usando a CPU vai ser preemptado por outro de melhor prioridade
+									int newPriority = checkPreemption(cpu.getJob());
+									if(newPriority > 0) {
+										//Caso haja preempção, muda o processo que está usando a CPU	
 										Job removedJob = cpu.removeJob();
-										removedJob.setStatus(JobStatus.BLOCKED);
-										receiveJob(removedJob);							
+										removedJob.setStatus(JobStatus.READY);
+										receiveJob(removedJob);																	
 									}
 								
-									//Processo "sobreviveu" na CPU (não terminou, ainda tem tem tempo, não foi preemptado e não fez operação de IO).
-									//Vai executar por uma unidade de tempo
+									//Processo não foi preemptado e ainda tem tem tempo na CPU. Verifica se ele vai fazer operação de IO
 									else {
-										cpu.runJob();
-										decrementTimeLeft();										
+										if(cpu.getJob().checkIO(time)) {
+											Job removedJob = cpu.removeJob();
+											removedJob.setStatus(JobStatus.BLOCKED);
+											receiveJob(removedJob);							
+										}
+									
+										//Processo "sobreviveu" na CPU (não terminou, ainda tem tem tempo, não foi preemptado e não fez operação de IO).
+										//Vai executar por uma unidade de tempo
+										else {
+											cpu.runJob();
+											decrementTimeLeft();										
+										}
 									}
 								}
 							}
+							if(cpu.getJob() == null)
+								cpu.receiveJob(pickNextJob(cpu));	
 						}
-						if(cpu.getJob() == null)
-							cpu.receiveJob(pickNextJob(cpu));	
-					}				
+					}
+						
 				updateJobsTimeStats();
 				}	
 				if(done.size()<numJobs) 
@@ -274,5 +278,7 @@ public class RoundRobin {
 			public ArrayList<Job> getReadyJobs(int priority){
 				return ready.get(priority);
 			}
+
+			
 			
 }
