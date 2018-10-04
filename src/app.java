@@ -61,7 +61,7 @@ public class app {
 	public static void main(String[ ] args) {
 		
 		//Configurar path na hora de apresentar!
-		File file = new File ("C:/Users/Maica/git/SisOp/testFiles/trab-so1-teste3 SR.txt");
+		File file = new File ("jobs.txt");
 		
 		//Leitura do arquivo
 		read(file);

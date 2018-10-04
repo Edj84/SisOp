@@ -259,16 +259,19 @@ public class RoundRobin {
 			}
 
 			public String calculate() {
-				int responseMean = 0;
-				int waitingMean = 0;
+				float responseSum = 0;
+				float waitingSum = 0;
 				
 				for(Job job : done) {
-					responseMean += job.getResponseTime();
-					waitingMean += job.getWaitingTime();			
+					responseSum += job.getResponseTime();
+					waitingSum += job.getWaitingTime();			
 				}
 				
-				return "Média do tempo de resposta: " + String.valueOf(responseMean) 
-						+ "\nMédia do tempo de espera: " + String.valueOf(waitingMean);				
+				float responseMean = responseSum/numJobs;
+				float waitingMean = waitingSum/numJobs;
+				
+				return "Média do tempo de resposta: " + responseMean 
+						+ "\nMédia do tempo de espera: " + waitingMean;				
 			}
 			
 			public ArrayList<Job> getReadyJobs(int priority){
