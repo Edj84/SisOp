@@ -37,8 +37,7 @@ public class CPU {
 		job.setStatus(JobStatus.RUNNING);
 		job.setAnswered();
 		job.updateReceivedTime();
-		setStatus();
-		log.append(status);
+		setStatus();		
 	}
 	
 	public void setStatus() {
@@ -71,10 +70,16 @@ public class CPU {
 		return log.toString();
 	}
 	
+	public void setLog() {
+		log.append(status);		
+	}	
+	
 	public String toString() {
 		if(job != null)
 			return "CPU " + ID + " tem Job " + job.getID() + " - Status " + job.getStatus() + " receivedTime " + job.getReceivedTime();
 		else
 			return "CPU " + ID + "não tem job no momento";
-	}	
+	}
+
+	
 }

@@ -99,6 +99,7 @@ public class RoundRobin {
 							if(cpu.getJob() == null)
 								cpu.receiveJob(pickNextJob(cpu));	
 						}
+						cpu.setLog();
 					}
 						
 				updateJobsTimeStats();

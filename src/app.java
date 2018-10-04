@@ -60,7 +60,7 @@ public class app {
 	public static void main(String[ ] args) {
 		
 		//Configurar path na hora de apresentar!
-		File file = new File ("C:/Users/Maica/git/SisOp/testFiles/trab-so1-teste3 SR.txt");
+		File file = new File ("C:/Users/Maica/git/SisOp/testFiles/trab-so1-teste2 SR.txt");
 		
 		//Leitura do arquivo
 		read(file);
@@ -80,8 +80,7 @@ public class app {
 		
 		try {
 			numCPUs = input.nextInt();
-			System.out.println("CPUS " + numCPUs);
-			
+						
 			while(numCPUs != 1 && numCPUs != 2 && numCPUs != 4) {
 				System.out.println("Seleção inválida.");
 				System.out.println("Selecione a quantidade de de processadores: ");
