@@ -82,7 +82,6 @@ public class RoundRobin {
 									if(cpu.getJob().checkIO(time)) {
 										Job removedJob = cpu.removeJob();
 										removedJob.setStatus(JobStatus.BLOCKED);
-										removedJob.checkDone();
 										receiveJob(removedJob);							
 									}
 								
@@ -97,16 +96,28 @@ public class RoundRobin {
 						}
 						if(cpu.getJob() == null)
 							cpu.receiveJob(pickNextJob(cpu));	
-					}
-				
-				
-				//Ainda há processos que não terminaram
-				return true;
-				}
+					}				
+				updateJobsTimeStats();
+				}	
+				if(done.size()<numJobs) 
+					//Ainda há processos que não terminaram
+					return true;				
 				
 				else return false; ////Todos os processos já terminaram
 			}
 			
+			private void updateJobsTimeStats() {
+				
+				ArrayList<Job> queue;
+				
+				for(int i = 1; i < 10; i++) {
+					queue = ready.get(i);
+					
+					for(Job job : queue) 
+						job.updateTimeStats();
+				}				
+			}
+
 			public void checkBlockedQueue(int time) {
 				if(!blocked.isEmpty()) {
 					Job jobBlocked;
@@ -120,13 +131,11 @@ public class RoundRobin {
 					}
 				}
 			}
-			
-			
+						
 			public boolean checkHasTimeLeft(CPU cpu) {
 				return timeLeft > 0;
 			}
 			
-
 			private void checkJobsArrived(ArrayList<Job> jobs, int time) {
 				
 				//Envia para o escalonador os jobs que chegaram no instante anterior de tempo
@@ -233,14 +242,6 @@ public class RoundRobin {
 				}							
 			}
 			
-			private Job removeJobFromCPU(CPU cpu, JobStatus status) {
-				Job jobRemoved = cpu.removeJob();
-				jobRemoved.setStatus(status);
-				return jobRemoved;		
-			}
-			
-			
-			
 			@Override
 			public String toString() {
 				StringBuilder str = new StringBuilder();
@@ -257,6 +258,19 @@ public class RoundRobin {
 							 
 			}
 
+			public String calculate() {
+				int responseMean = 0;
+				int waitingMean = 0;
+				
+				for(Job job : done) {
+					responseMean += job.getResponseTime();
+					waitingMean += job.getWaitingTime();			
+				}
+				
+				return "Média do tempo de resposta: " + String.valueOf(responseMean) 
+						+ "\nMédia do tempo de espera: " + String.valueOf(waitingMean);				
+			}
+			
 			public ArrayList<Job> getReadyJobs(int priority){
 				return ready.get(priority);
 			}

@@ -29,7 +29,8 @@ public class CPU {
 	
 	public void runJob() {			
 		job.setStatus(JobStatus.RUNNING);
-		job.incrementReceivedTime();
+		job.setAnswered();
+		job.updateReceivedTime();
 		setStatus();
 	}
 	
