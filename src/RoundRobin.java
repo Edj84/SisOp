@@ -262,9 +262,9 @@ public class RoundRobin {
 				float burstSum = 0;
 				float waitingSum = 0;
 				
-				for(Job job : done) {
-					burstSum += job.getBurstTime();
-					waitingSum += job.getWaitingTime();			
+				for(int i = 0; i < done.size(); i++) {
+					burstSum = burstSum + done.get(i).getBurstTime();
+					waitingSum = waitingSum + done.get(i).getWaitingTime();
 				}
 				
 				float burstMean = burstSum/numJobs;
