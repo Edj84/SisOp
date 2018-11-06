@@ -1,5 +1,0 @@
-
-public enum JobStatus {
-	RUNNING, BLOCKED, READY, DONE, CHANGING_CONTEXT, CREATED;
-	
-}
