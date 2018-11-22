@@ -10,7 +10,7 @@ public class app {
 	public static void main(String[ ] args) {
 		requests = new ArrayList<Request>();
 		//Set path before running!
-		File file = new File ("C:\\Users\\DELL\\eclipse-workspace\\T2\\src\\requests.txt");
+		File file = new File ("requests.txt");
 		
 		//File read
 		read(file);

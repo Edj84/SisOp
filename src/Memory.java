@@ -57,6 +57,7 @@ public class Memory {
 	public void setFreeSpace(int reqSize) {
 		this.freeSpace -= reqSize;
 		System.out.println("Mem agora tem " + freeSpace + " livres");
+		
 	}
 	
 	public Block getBlockByID(int ID) {		
@@ -66,7 +67,7 @@ public class Memory {
 	public int insert(int spotID, Request req) {
 		
 		Block spot = blocks.getBlockByID(spotID);		
-		Block newBlock = new Block(req.getNumeral(), spot);
+		Block newBlock = new Block(req, spot);
 		Block spotNext = spot.getNext();
 		Block spotFather = spot.getFather();
 		
@@ -90,7 +91,7 @@ public class Memory {
 			spot.setEnd(newBlock.getBegin());
 			System.out.print("Bloco " + spot.getID() + " dividido. Tamanho original " + spot.getSize() + " "); 
 			spot.setSize();
-			System.out.println(spot);			
+			System.out.println("Novo status: " + spot);			
 			spot.setNext(newBlock);
 		}
 		
@@ -102,6 +103,10 @@ public class Memory {
 	@Override
 	public String toString() {
 		return blocks.toString();
+	}
+
+	public void setHead(Block releasedBlock) {		
+		blocks.setHead(releasedBlock);
 	}
 	
 }

@@ -12,7 +12,7 @@ public class Block {
 	//Constructor for the first block.
 	//ID is set to 0 by default.
 	public Block (int begin, int end) {
-		ID = count;
+		ID = 0;
 		this.begin = begin;
 		this.end = end;
 		size = this.end - begin;
@@ -23,12 +23,11 @@ public class Block {
 	
 	//Constructor for the remaining blocks.
 	//ID starts in 1 and is incremented according to instantiation order.  
-	public Block (int size, Block spot) {
-		count++;
-		ID = count;
-		this.end = spot.getEnd();
-		this.begin = this.end - size;
-		this.size = size;
+	public Block (Request req, Block spot) {
+		ID = req.getID();
+		this.size = req.getNumeral();
+		this.end = spot.getEnd();		
+		this.begin = this.end - size;		
 		this.isFree = false;
 		this.father = spot;
 		this.next = spot.next;		
@@ -90,6 +89,10 @@ public class Block {
 	
 	@Override
 	public String toString(){
-		return "Bloco " + ID + ", tamanho " + size + " inicio " + begin + " fim " + end + " status " + isFree; 
+		String status;
+		if(isFree)
+			return "bloco " + ID + ", tamanho " + size + ", inicio " + begin + ", fim " + end + ", status livre";			
+		else			
+			return "bloco " + ID + ", tamanho " + size + ", inicio " + begin + ", fim " + end + ", status ocupado"; 
 	}
 }

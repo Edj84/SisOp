@@ -2,15 +2,25 @@
 public class Request {
 	private boolean type; // true -> allocation ; false -> liberation
 	private int numeral;
+	private static int count = 0;
+	private int ID;
 
 	public Request (String type, int numeral) {	
 		
-		if(type.toUpperCase().equals("S"))
-			this.type = true;
-		else if(type.toUpperCase().equals("L"))
-			this.type = false;
-		
 		this.numeral = numeral;
+		
+		if(type.toUpperCase().equals("S")) {
+			this.type = true;
+			count++;
+			ID = count;
+		}
+		
+		else if(type.toUpperCase().equals("L")) {
+			this.type = false;
+			ID = this.numeral;
+		}
+		
+		
 	}
 
 	public boolean getType() {
@@ -33,6 +43,10 @@ public class Request {
 		
 		return type + " " + numeral;
 		
+	}
+
+	public int getID() {
+		return ID;
 	}
 	
 }

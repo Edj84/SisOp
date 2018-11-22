@@ -52,7 +52,7 @@ public class LinkedList {
 		Block aux = head;		
 		
 		while(aux != null) {			
-			sb.append(aux);
+			sb.append(aux + "\n");
 			aux = aux.getNext();
 		}
 		
