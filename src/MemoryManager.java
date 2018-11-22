@@ -9,7 +9,7 @@ public class MemoryManager {
 	public MemoryManager(int begin, int end, ArrayList<Request> requests) {
 		mem = new Memory(begin, end);
 		System.out.println("Tamanho da mem: " + mem.getTotalSize());
-		System.out.println("EspaÁo livre: " + mem.getFreeSpace());
+		System.out.println("Espa√ßo livre: " + mem.getFreeSpace());
 		pending = requests;
 		queued = new ArrayList<Request>();
 	}
@@ -40,7 +40,7 @@ public class MemoryManager {
 			
 			//If father exists and is also free, merge the two blocks
 			if(father.isFree()){
-				System.out.println("Pai do bloco " + releasedBlock.getID() + " est· livre");
+				System.out.println("Pai do bloco " + releasedBlock.getID() + " est√° livre");
 				releasedBlock.setBegin(father.getBegin());
 				releasedBlock.setFather(grandpa);
 				releasedBlock.setSize();
@@ -57,7 +57,7 @@ public class MemoryManager {
 				System.out.println(mem.toString());
 			}
 			
-			else System.out.println("Pai ocupado, impossÌvel fazer merge");
+			else System.out.println("Pai ocupado, imposs√≠vel fazer merge");
 		}		
 		
 		//Check if the block being released has a next one (child)
@@ -67,7 +67,7 @@ public class MemoryManager {
 			
 			//If a next block exists and is also free, join the two blocks
 			if(next.isFree()){
-				System.out.println("Filho do bloco " + releasedBlock.getID() + " est· livre");
+				System.out.println("Filho do bloco " + releasedBlock.getID() + " est√° livre");
 				releasedBlock.setEnd(next.getEnd());
 				releasedBlock.setNext(grandchild);
 			
@@ -80,7 +80,7 @@ public class MemoryManager {
 				System.out.println(mem.toString());
 			}
 			else
-				System.out.println("Filho ocupado, impossÌvel fazer merge");
+				System.out.println("Filho ocupado, imposs√≠vel fazer merge");
 		}
 		
 		//Check if after the release there is any blocks waiting on the queue that can now be allocated
@@ -95,9 +95,9 @@ public class MemoryManager {
 		ArrayList<Request> nonReallocated = new ArrayList<Request>();
 		
 		for(Request r : queued) {
-			System.out.println("Tentando atender requisiÁ„o " + r.getID() + " - em fila de espera");
+			System.out.println("Tentando atender requisi√ß√£o " + r.getID() + " - em fila de espera");
 			if(allocate(r, nonReallocated) == -1)
-				System.out.println("ImpossÌvel atender requisiÁ„o " + r.getID() + " no momento");
+				System.out.println("Imposs√≠vel atender requisi√ß√£o " + r.getID() + " no momento");
 		}
 		
 		queued = nonReallocated;		
@@ -109,7 +109,7 @@ public class MemoryManager {
 		
 		//Check if mem has enough free space to answer request.		
 		if (memHasFreeSpace(reqSize)){
-			System.out.println("MemÛria pode comportar requisiÁ„o " + req.getID() + " - total de " + mem.getFreeSpace() + " livres Vs " + reqSize + " requisitados.\nProcurando lugar...");
+			System.out.println("Mem√≥ria pode comportar requisi√ß√£o " + req.getID() + " - total de " + mem.getFreeSpace() + " livres Vs " + reqSize + " requisitados.\nProcurando lugar...");
 			
 			//gets the ID of the first free block that is big enough to fit the new one, if there's any 
 			int spotID = getSpot(reqSize); 
@@ -129,6 +129,8 @@ public class MemoryManager {
 				fragmentation(req.getID());			
 		}
 		
+		else System.out.println("Sem mem√≥ria para atender solicita√ß√£o " + req.getID() + " - total de " + mem.getFreeSpace() + " livres Vs " + reqSize + " requisitados.");
+		
 		//If execution got here, the request could not be attended. Default return is -1 in this case. 
 		//Request gets in queue to wait for a memory release to happen and then try again being allocated.		
 		waitingQueue.add(req);		
@@ -144,8 +146,8 @@ public class MemoryManager {
 			aux = aux.getNext();
 		}
 		
-		System.out.println("ImpossÌvel atender solicitaÁ„o.");
-		System.out.println("Apesar de haver " + mem.getFreeSpace() + " livre(s), nenhum bloco comporta a requisiÁ„o " + reqSize + ". FragmentaÁ„o externa.");		
+		System.out.println("Imposs√≠vel atender solicita√ß√£o.");
+		System.out.println("Apesar de haver " + mem.getFreeSpace() + " livre(s), nenhum bloco comporta a requisi√ß√£o " + reqSize + ". Fragmenta√ß√£o externa.");		
 	}
 
 	private int getSpot(int reqSize) {
