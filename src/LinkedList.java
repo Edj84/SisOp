@@ -1,33 +1,61 @@
-package t2SOP;
+
 
 public class LinkedList {
-	private Bloco head;
-	private Bloco tail;
+	private Block head;
+	private Block tail;
 	
-	public LinkedList() {
-		this.head = null;
+	public LinkedList(int begin, int end) {
+		this.head = new Block(begin, end);
+		head.setFather(null);
+		head.setNext(null);
 		this.tail = null;
 	}
 	
-	public LinkedList(int inicio, int fim) {
-		this.head = new Bloco(inicio, fim);		
-	}
-	
-	public Bloco getBlocoByID(int ID) {
-		Bloco aux = head;
+	//Iterates across the list searching for matching ID block
+	public Block getBlockByID(int ID) {
+		
+		Block aux = head;
 		
 		while(aux != null) {
+			
 			if(aux.getID() == ID) 
 				return aux;
+			
 			else aux = aux.getNext();
 		}
 		
 		return null;
 	}
 	
+	//Getters & setters
 	
+	public Block getHead() {
+		return head;
+	}
 
+	public void setHead(Block head) {
+		this.head = head;
+	}
+
+	public Block getTail() {
+		return tail;
+	}
+
+	public void setTail(Block tail) {
+		this.tail = tail;
+	}
 	
-	
-	
+	@Override
+	public String toString() {
+		
+		StringBuilder sb = new StringBuilder();
+		Block aux = head;		
+		
+		while(aux != null) {			
+			sb.append(aux);
+			aux = aux.getNext();
+		}
+		
+		return sb.toString();
+	}
 }
