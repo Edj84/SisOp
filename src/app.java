@@ -1,3 +1,20 @@
+/*Descrição do problema
+ * Ler a partir de um arquivo de teste dados que indicam:
+ * - o tamanho do espaço de endereçamento de uma memória;
+ * - uma sequência de requisições, que tanto podem ser de alocação como de liberação de blocos de memória.
+ * A partir destes dados, deve ser simulado processamento destas requisições pelo gerente de memória em um sistema que utiliza partições de tamanho variável. 
+ * O sistema desenvolvido deve permitir visualizar o estado da memória sempre que necessário, bem como deve indicar eventuais ocorrências de insuficiência de memória e de fragmentação externa.
+ */
+
+/* Descrição da solução:
+ * A memória é dividida em blocos, os quais são organizados em uma lista duplamente encadeada.
+ * A lista é responsável por gerenciar a inclusão, exclusão e junção dos blocos de memória conforme as requisições são processadas.
+ * Sempre que necessário, a lista é percorrida para imprimir o estado atual da memória no console.
+ */
+
+//@author: Eduardo José Silva, 25/11/2018. 
+
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
